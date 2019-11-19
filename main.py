@@ -41,6 +41,7 @@ class MyGame(arcade.Window):
         # Create your sprites and sprite lists here
         self.cards_list1 = arcade.SpriteList()
         self.cards_list2 = arcade.SpriteList()
+        self.discard_pile = arcade.SpriteList()
 
         self.playarea = arcade.Sprite("resources/playarea.png")
         self.playarea.center_x = (SCREEN_WIDTH//2)
@@ -71,6 +72,7 @@ class MyGame(arcade.Window):
 
         # Call draw() on all your sprite lists below
         self.playarea.draw()
+        self.discard_pile.draw()
         self.cards_list1.draw()
         self.cards_list2.draw()
 
@@ -85,6 +87,7 @@ class MyGame(arcade.Window):
         self.playarea.update()
         self.cards_list1.update()
         self.cards_list2.update()
+        self.discard_pile.update()
 
     def on_mouse_motion(self, x, y, delta_x, delta_y):
         """
@@ -102,6 +105,7 @@ class MyGame(arcade.Window):
             if len(clicked) > 0:
                 self.sino_hatak = clicked[0]
                 self.last_mouse_position = x, y
+                print(self.sino_hatak.filename)
         """
         Called when the user presses a mouse button.
         """
@@ -112,21 +116,16 @@ class MyGame(arcade.Window):
         """
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.sino_hatak = None
-        if arcade.check_for_collision_with_list(self.playarea, self.cards_list1) == [] and arcade.check_for_collision_with_list(self.playarea, self.cards_list2) == []:
-            for card in self.cards_list1:
-                card.position = (70,145)
-                self.cards_list1.move(143,0)
-            self.cards_list1.move((SCREEN_WIDTH//2)-self.cards_list1.center[0],0)
-            for card in self.cards_list2:
-                card.position = (70,SCREEN_HEIGHT-145)
-                self.cards_list2.move(143,0)
-            self.cards_list2.move((SCREEN_WIDTH//2)-self.cards_list2.center[0],0)
-        else:
+        if arcade.check_for_collision_with_list(self.playarea, self.cards_list1) != []:
             for card in arcade.check_for_collision_with_list(self.playarea, self.cards_list1):
                 card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
+                self.discard_pile.append(card)
+                self.cards_list1.remove(card)
+        if arcade.check_for_collision_with_list(self.playarea, self.cards_list2) != []:
             for card in arcade.check_for_collision_with_list(self.playarea, self.cards_list2):
                 card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
-
+                self.discard_pile.append(card)
+                self.cards_list2.remove(card)
 def main():
     """ Main method """
     game = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
