@@ -42,7 +42,7 @@ class MyGame(arcade.Window):
         self.cards_list1 = arcade.SpriteList()
         self.cards_list2 = arcade.SpriteList()
 
-        self.playarea = arcade.Sprite("C:/Users/james/github/bullet/resources/playarea.png")
+        self.playarea = arcade.Sprite("resources/playarea.png")
         self.playarea.center_x = (SCREEN_WIDTH//2)
         self.playarea.center_y = (SCREEN_HEIGHT//2)
 

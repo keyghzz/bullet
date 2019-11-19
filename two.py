@@ -14,4 +14,4 @@ def getimgStr(card):
     ranks.insert(0,"A")
     ranks.extend(["J","Q","K","",""])
     print(card)
-    return "C:/Users/james/github/bullet/resources/card" + str(suits[card[0]]) + str(ranks[card[1]]) + ".png"
+    return "resources/card" + str(suits[card[0]]) + str(ranks[card[1]]) + ".png"
