@@ -1,7 +1,7 @@
 import random
 def deckGo():
     deck = [(x%4,y%13) for x,y in enumerate(range(0,52))]
-    deck.extend([(4,14),(4,15)])
+    deck.extend([(4,13),(4,14)])
     random.shuffle(deck)
     return deck
 
@@ -14,4 +14,4 @@ def getimgStr(card):
     ranks.insert(0,"A")
     ranks.extend(["J","Q","K","",""])
     print(card)
-    return "resources/" + str(suits[card[0]]) + str(ranks[card[1]]) + ".png"
+    return "C:/Users/james/github/bullet/resources/card" + str(suits[card[0]]) + str(ranks[card[1]]) + ".png"

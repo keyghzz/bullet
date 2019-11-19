@@ -42,6 +42,10 @@ class MyGame(arcade.Window):
         self.cards_list1 = arcade.SpriteList()
         self.cards_list2 = arcade.SpriteList()
 
+        self.playarea = arcade.Sprite("C:/Users/james/github/bullet/resources/playarea.png")
+        self.playarea.center_x = (SCREEN_WIDTH//2)
+        self.playarea.center_y = (SCREEN_HEIGHT//2)
+
         for x in self.hand1:
             card = arcade.Sprite(second.getimgStr(x))
             card.position = (70,145)
@@ -49,14 +53,12 @@ class MyGame(arcade.Window):
             self.cards_list1.append(card)
         self.cards_list1.move((SCREEN_WIDTH//2)-self.cards_list1.center[0],0)
 
-        card = arcade.Sprite("C:/Users/james/AppData/Local/Programs/Python/Python36-32/cardClubsA.png")
-        card.center_x = (SCREEN_WIDTH//2)
-        card.center_y = (SCREEN_HEIGHT-145)
-        self.cards_list2.append(card)
-
-        self.playarea = arcade.Sprite("C:/Users/james/AppData/Local/Programs/Python/Python36-32/playarea.png")
-        self.playarea.center_x = (SCREEN_WIDTH//2)
-        self.playarea.center_y = (SCREEN_HEIGHT//2)
+        for x in self.hand2:
+            card = arcade.Sprite(second.getimgStr(x))
+            card.position = (70,SCREEN_HEIGHT-145)
+            self.cards_list2.move(143,0)
+            self.cards_list2.append(card)
+        self.cards_list2.move((SCREEN_WIDTH//2)-self.cards_list2.center[0],0)
 
     def on_draw(self):
         """
@@ -68,9 +70,9 @@ class MyGame(arcade.Window):
         arcade.start_render()
 
         # Call draw() on all your sprite lists below
+        self.playarea.draw()
         self.cards_list1.draw()
         self.cards_list2.draw()
-        self.playarea.draw()
 
     def on_update(self, delta_time):
         """
@@ -84,21 +86,6 @@ class MyGame(arcade.Window):
         self.cards_list1.update()
         self.cards_list2.update()
 
-    def on_key_press(self, key, key_modifiers):
-        """
-        Called whenever a key on the keyboard is pressed.
-
-        For a full list of keys, see:
-        http://arcade.academy/arcade.key.html
-        """
-        pass
-
-    def on_key_release(self, key, key_modifiers):
-        """
-        Called whenever the user lets off a previously pressed key.
-        """
-        pass
-
     def on_mouse_motion(self, x, y, delta_x, delta_y):
         """
         Called whenever the mouse moves.
@@ -110,6 +97,7 @@ class MyGame(arcade.Window):
     def on_mouse_press(self, x, y, button, key_modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
             clicked = arcade.get_sprites_at_point((x,y), self.cards_list1)
+            clicked += arcade.get_sprites_at_point((x,y), self.cards_list2)
             print(clicked)
             if len(clicked) > 0:
                 self.sino_hatak = clicked[0]
@@ -124,15 +112,20 @@ class MyGame(arcade.Window):
         """
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.sino_hatak = None
-        if arcade.check_for_collision_with_list(self.playarea, self.cards_list1) == []:
+        if arcade.check_for_collision_with_list(self.playarea, self.cards_list1) == [] and arcade.check_for_collision_with_list(self.playarea, self.cards_list2) == []:
             for card in self.cards_list1:
                 card.position = (70,145)
                 self.cards_list1.move(143,0)
             self.cards_list1.move((SCREEN_WIDTH//2)-self.cards_list1.center[0],0)
+            for card in self.cards_list2:
+                card.position = (70,SCREEN_HEIGHT-145)
+                self.cards_list2.move(143,0)
+            self.cards_list2.move((SCREEN_WIDTH//2)-self.cards_list2.center[0],0)
         else:
             for card in arcade.check_for_collision_with_list(self.playarea, self.cards_list1):
                 card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
-
+            for card in arcade.check_for_collision_with_list(self.playarea, self.cards_list2):
+                card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
 
 def main():
     """ Main method """
