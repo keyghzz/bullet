@@ -95,14 +95,8 @@ class MyGame(arcade.Window):
         if self.sino_hatak is not None:
             self.sino_hatak.position = self.last_mouse_position
 
-        if self.Player1.turn == False:
-            self.cardsPlayer1, self.sprite2val1 = self.refreshHand(self.Player1.hand, self.cardsPlayer1, (70, 145))
-        elif self.Player2.turn == False:
-            self.cardsPlayer2, self.sprite2val2 = self.refreshHand(self.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
-
         if len(self.deck) == 0:
-            for x in deckShow:
-                self.deckShow.remove(x)
+            self.deckShow = []
 
         self.playArea.update()
         self.spawn.update()
@@ -158,19 +152,21 @@ class MyGame(arcade.Window):
                 self.cardsPlayer1.remove(card)
                 self.discardCoord = self.sprite2val1[card]
                 self.Player1.hand.remove(self.sprite2val1[card])
-            self.Player1.turn = False
-            self.Player2.turn = True
+            self.cardsPlayer1, self.sprite2val1 = self.refreshHand(self.Player1.hand, self.cardsPlayer1, (70, 145))
+            self.cardsPlayer2, self.sprite2val2 = self.refreshHand(self.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
 
-        if arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer2) != []:
+        elif arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer2) != []:
             for card in arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer2):
                 card.position = (SCREEN_WIDTH//2+292, SCREEN_HEIGHT//2)
                 self.discardPile.append(card)
-                self.discardCoord = self.sprite2val1[card]
+                self.discardCoord = self.sprite2val2[card]
                 self.cardsPlayer2.remove(card)
                 self.discardCoord = self.sprite2val2[card]
                 self.Player2.hand.remove(self.sprite2val2[card])
-            self.Player2.turn = False
-            self.Player1.turn = True
+            self.cardsPlayer1, self.sprite2val1 = self.refreshHand(self.Player1.hand, self.cardsPlayer1, (70, 145))
+            self.cardsPlayer2, self.sprite2val2 = self.refreshHand(self.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
+
+#from here to last if statements, correct turn to hasSwapped
 
         if arcade.check_for_collision_with_list(self.playArea, self.spawn) != []:
             for card in arcade.check_for_collision_with_list(self.playArea, self.spawn):
@@ -178,16 +174,10 @@ class MyGame(arcade.Window):
                 self.discardPile.append(card)
                 self.discardCoord = self.spawnCoord
                 self.spawn.remove(card)
-
-            if self.Player1.turn == True:
-                self.Player1.turn = False
-                self.Player2.turn = True
-            else:
-                self.Player1.turn = True
-                self.Player2.turn = False
+            self.endTurn()
 
         if len(self.spawn) > 0:
-            if arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer1) != []:
+            if arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer1) != [] and self.Player1.turn == True:
                 for card in arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer1):
                     card.position = (SCREEN_WIDTH//2+292, SCREEN_HEIGHT//2)
                     self.discardPile.append(card)
@@ -196,23 +186,21 @@ class MyGame(arcade.Window):
                     self.Player1.hand.remove(self.sprite2val1[card])
                     self.Player1.hand.insert(iOfC, self.spawnCoord)
                     self.spawn.remove(self.spawn[0])
-                self.Player1.turn = False
-                self.Player2.turn = True
+                self.endTurn()
 
-            elif arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer2) != []:
+            elif arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer2) != [] and self.Player2.turn == True:
                 for card in arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer2):
                     card.position = (SCREEN_WIDTH//2+292, SCREEN_HEIGHT//2)
                     self.discardPile.append(card)
                     self.discardCoord = self.sprite2val2[card]
                     iOfC = self.Player2.hand.index(self.sprite2val2[card])
                     self.Player2.hand.remove(self.sprite2val2[card])
-                    self.Player1.hand.insert(iOfC, self.spawnCoord)
+                    self.Player2.hand.insert(iOfC, self.spawnCoord)
                     self.spawn.remove(self.spawn[0])
-                self.Player1.turn = True
-                self.Player2.turn = False
+                self.endTurn()
 
         if len(self.discardPile) > 0:
-            if arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer1) != []:
+            if arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer1) != [] and self.Player1.turn == True:
                 for card in arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer1):
                     card.position = (SCREEN_WIDTH//2+292, SCREEN_HEIGHT//2)
                     self.discardPile.remove(self.discardPile[len(self.discardPile)-1])
@@ -220,9 +208,9 @@ class MyGame(arcade.Window):
                     iOfC = self.Player1.hand.index(self.sprite2val1[card])
                     self.Player1.hand.insert(iOfC, self.discardCoord)
                     self.Player1.hand.remove(self.sprite2val1[card])
-                self.Player1.turn = False
-                self.Player2.turn = True
-            elif arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer2) != []:
+                    self.discardCoord = self.sprite2val1[card]
+                self.endTurn()
+            elif arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer2) != [] and self.Player2.turn == True:
                 for card in arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer2):
                     card.position = (SCREEN_WIDTH//2+292, SCREEN_HEIGHT//2)
                     self.discardPile.remove(self.discardPile[len(self.discardPile)-1])
@@ -230,8 +218,15 @@ class MyGame(arcade.Window):
                     iOfC = self.Player2.hand.index(self.sprite2val2[card])
                     self.Player2.hand.insert(iOfC, self.discardCoord)
                     self.Player2.hand.remove(self.sprite2val2[card])
-                self.Player1.turn = True
-                self.Player2.turn = False
+                    self.discardCoord = self.sprite2val2[card]
+                self.endTurn()
+
+    def endTurn(self):
+        self.Player1.turn = not self.Player1.turn
+        self.Player2.turn = not self.Player2.turn
+        self.cardsPlayer1, self.sprite2val1 = self.refreshHand(self.Player1.hand, self.cardsPlayer1, (70, 145))
+        self.cardsPlayer2, self.sprite2val2 = self.refreshHand(self.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
+
 
     def refreshHand(self, hand, spriteList, tup):
         spriteList = arcade.SpriteList()
