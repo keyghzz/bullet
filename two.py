@@ -20,3 +20,9 @@ class Player:
         self.hand = []
         self.turn = False
         self.hasDrawn = False
+
+def endTurn(self):
+    self.Player1.turn = not self.Player1.turn
+    self.Player2.turn = not self.Player2.turn
+    self.cardsPlayer1, self.sprite2val1 = self.refreshHand(self.Player1.hand, self.cardsPlayer1, (70, 145))
+    self.cardsPlayer2, self.sprite2val2 = self.refreshHand(self.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))

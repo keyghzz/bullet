@@ -14,7 +14,7 @@ SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 1000
 SCREEN_TITLE = "Digital Bullet"
 
-class MyGame(arcade.Window):
+class DigitalBullet(arcade.Window):
     """
     Main application class.
 
@@ -49,7 +49,14 @@ class MyGame(arcade.Window):
         # Create your sprites and sprite lists here
         self.cardsPlayer1 = arcade.SpriteList()
         self.cardsPlayer2 = arcade.SpriteList()
+
         self.discardPile = arcade.SpriteList()
+        firstTup, self.deck = engine.drawfromDeck(1,self.deck)
+        first = arcade.Sprite(engine.getimgStr(firstTup[0]), 0.9)
+        first.center_x = (SCREEN_WIDTH//2+264)
+        first.center_y = (SCREEN_HEIGHT//2)
+        self.discardPile.append(first)
+        self.discardCoord = firstTup[0]
 
         self.deckShow = arcade.SpriteList()
         deckguy = arcade.Sprite("resources/cardBack_red1.png", 0.9)
@@ -80,12 +87,6 @@ class MyGame(arcade.Window):
         arcade.start_render()
 
         # Call draw() on all your sprite lists below
-        self.playArea.draw()
-        self.cardsPlayer1.draw()
-        self.cardsPlayer2.draw()
-        self.deckShow.draw()
-        self.discardPile.draw()
-        self.spawn.draw()
         if self.Player1.turn == True:
             arcade.draw_text("YOUR TURN",
                          SCREEN_WIDTH//2, 300, arcade.color.WHITE, 50, width=500, align="center",
@@ -94,6 +95,13 @@ class MyGame(arcade.Window):
             arcade.draw_text("YOUR TURN",
                          SCREEN_WIDTH//2, 700, arcade.color.WHITE, 50, width=500, align="center",
                          anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf", rotation = 180.0)
+        self.playArea.draw()
+        self.cardsPlayer1.draw()
+        self.cardsPlayer2.draw()
+        self.deckShow.draw()
+        self.discardPile.draw()
+        self.spawn.draw()
+
 
     def on_update(self, delta_time):
         """
@@ -124,8 +132,10 @@ class MyGame(arcade.Window):
 
     def on_mouse_press(self, x, y, button, key_modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
-            toDrag = arcade.get_sprites_at_point((x,y), self.cardsPlayer1)
-            toDrag += arcade.get_sprites_at_point((x,y), self.cardsPlayer2)
+            if self.Player1.turn == True:
+                toDrag = arcade.get_sprites_at_point((x,y), self.cardsPlayer1)
+            else:
+                toDrag = arcade.get_sprites_at_point((x,y), self.cardsPlayer2)
             toDrag += arcade.get_sprites_at_point((x,y), self.spawn)
             deckClick = arcade.get_sprites_at_point((x,y), self.deckShow)
             discardClick = arcade.get_sprites_at_point((x,y), self.discardPile)
@@ -169,7 +179,7 @@ class MyGame(arcade.Window):
             self.cardsPlayer1, self.sprite2val1 = self.refreshHand(self.Player1.hand, self.cardsPlayer1, (70, 145))
             self.cardsPlayer2, self.sprite2val2 = self.refreshHand(self.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
 
-        elif arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer2) != [] and self.Player2.hasDrawn == False:
+        if arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer2) != [] and self.Player2.hasDrawn == False:
             for card in arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer2):
                 card.position = (SCREEN_WIDTH//2+264, SCREEN_HEIGHT//2)
                 self.discardPile.append(card)
@@ -179,7 +189,6 @@ class MyGame(arcade.Window):
                 self.Player2.hand.remove(self.sprite2val2[card])
             self.cardsPlayer1, self.sprite2val1 = self.refreshHand(self.Player1.hand, self.cardsPlayer1, (70, 145))
             self.cardsPlayer2, self.sprite2val2 = self.refreshHand(self.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
-
 
         if arcade.check_for_collision_with_list(self.playArea, self.spawn) != []:
             for card in arcade.check_for_collision_with_list(self.playArea, self.spawn):
@@ -217,6 +226,10 @@ class MyGame(arcade.Window):
                     self.spawn.remove(self.spawn[0])
                 self.Player2.hasDrawn = False
                 self.endTurn()
+            else:
+                self.cardsPlayer1, self.sprite2val1 = self.refreshHand(self.Player1.hand, self.cardsPlayer1, (70, 145))
+                self.cardsPlayer2, self.sprite2val2 = self.refreshHand(self.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
+                self.spawn[0].position = (SCREEN_WIDTH//2,SCREEN_HEIGHT//2)
 
         if len(self.discardPile) > 0:
             if arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer1) != [] and self.Player1.turn == True and self.Player1.hasDrawn == False:
@@ -239,6 +252,10 @@ class MyGame(arcade.Window):
                     self.Player2.hand.remove(self.sprite2val2[card])
                     self.discardCoord = self.sprite2val2[card]
                 self.endTurn()
+            else:
+                self.cardsPlayer1, self.sprite2val1 = self.refreshHand(self.Player1.hand, self.cardsPlayer1, (70, 145))
+                self.cardsPlayer2, self.sprite2val2 = self.refreshHand(self.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
+                self.discardPile[len(self.discardPile)-1].position = (SCREEN_WIDTH//2+264,SCREEN_HEIGHT//2)
 
     def endTurn(self):
         self.Player1.turn = not self.Player1.turn
@@ -263,7 +280,7 @@ class MyGame(arcade.Window):
 
 def main():
     """ Main method """
-    game = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    game = DigitalBullet(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     game.setup()
     arcade.run()
 
