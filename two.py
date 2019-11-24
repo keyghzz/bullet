@@ -19,4 +19,4 @@ class Player:
     def __init__(self):
         self.hand = []
         self.turn = False
-        self.hasClicked = False
+        self.hasDrawn = False
