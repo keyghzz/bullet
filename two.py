@@ -113,6 +113,7 @@ class Game:
         cardsPlayer1, sprite2val1 = main.refreshHand(hand1, cardsPlayer1, (70, 145))
         cardsPlayer2, sprite2val2 = main.refreshHand(hand2, cardsPlayer2, (70, SCREEN_HEIGHT-145))
         return cardsPlayer1, cardsPlayer2, sprite2val1, sprite2val2
+        
 Game = Game([])
 print("Player 1 was dealt the following cards: " + ", ".join(map(str, Game.Player1.hand)))
 print("Player 2 was dealt the following cards: " + ", ".join(map(str, Game.Player2.hand)))

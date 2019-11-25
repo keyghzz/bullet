@@ -28,7 +28,7 @@ class DigitalBullet(arcade.Window):
 
         arcade.set_background_color(arcade.color.AMAZON)
         self.sino_hatak = None
-        self.last_mouse_position = 0, 0
+        self.last_mouse_position = None
         self.cardsPlayer1 = None
         self.cardsPlayer2 = None
         self.discardPile = None
@@ -61,7 +61,6 @@ class DigitalBullet(arcade.Window):
         self.playArea.center_y = (SCREEN_HEIGHT//2)
 
         self.cardsPlayer1, engine.Game.Player1.sprite2val = refreshHand(engine.Game.Player1.hand, self.cardsPlayer1, (70, 145))
-
         self.cardsPlayer2, engine.Game.Player2.sprite2val = refreshHand(engine.Game.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
 
     def on_draw(self):
@@ -83,11 +82,11 @@ class DigitalBullet(arcade.Window):
                          SCREEN_WIDTH//2, 700, arcade.color.WHITE, 50, width=500, align="center",
                          anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf", rotation = 180.0)
         self.playArea.draw()
-        self.cardsPlayer1.draw()
-        self.cardsPlayer2.draw()
         if len(engine.Game.deck) != 0:
             self.deckShow.draw()
         self.discardPile.draw()
+        self.cardsPlayer1.draw()
+        self.cardsPlayer2.draw()
         self.spawn.draw()
 
 
@@ -116,6 +115,7 @@ class DigitalBullet(arcade.Window):
 
     def on_mouse_press(self, x, y, button, key_modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
+
             toDrag = arcade.get_sprites_at_point((x,y), self.cardsPlayer1)
             toDrag += arcade.get_sprites_at_point((x,y), self.cardsPlayer2)
             toDrag += arcade.get_sprites_at_point((x,y), self.spawn)
@@ -126,16 +126,16 @@ class DigitalBullet(arcade.Window):
                 self.last_mouse_position = x, y
             elif len(deckClick) > 0 and len(self.spawn) == 0:
                 cardTup, engine.Game.deck = engine.drawfromDeck(1, engine.Game.deck)
-                if len(cardTup) != 0:
-                    card = arcade.Sprite(engine.getimgStr(cardTup[0]), 0.9)
-                    card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
-                    self.spawn.append(card)
-                    engine.Game.spawnCoord = cardTup[0]
+                card = arcade.Sprite(engine.getimgStr(cardTup[0]), 0.9)
+                card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
+                self.spawn.append(card)
+                engine.Game.spawnCoord = cardTup[0]
                 engine.Game.hasDrawn(True)
             elif len(discardClick) != 0:
                 self.sino_hatak = discardClick[len(discardClick)-1]
                 self.last_mouse_position = x, y
-                #if len==0 INITIATE WIN SEQUENCE
+                    #if len==0 INITIATE WIN SEQUENCE
+
         """
         Called when the user presses a mouse button.
         """
