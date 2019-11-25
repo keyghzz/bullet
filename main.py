@@ -60,9 +60,9 @@ class DigitalBullet(arcade.Window):
         self.playArea.center_x = (SCREEN_WIDTH//2+264)
         self.playArea.center_y = (SCREEN_HEIGHT//2)
 
-        self.cardsPlayer1, engine.Game.sprite2val1 = self.refreshHand(engine.Game.Player1.hand, self.cardsPlayer1, (70, 145))
+        self.cardsPlayer1, engine.Game.Player1.sprite2val = refreshHand(engine.Game.Player1.hand, self.cardsPlayer1, (70, 145))
 
-        self.cardsPlayer2, engine.Game.sprite2val2 = self.refreshHand(engine.Game.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
+        self.cardsPlayer2, engine.Game.Player2.sprite2val = refreshHand(engine.Game.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
 
     def on_draw(self):
         """
@@ -131,10 +131,7 @@ class DigitalBullet(arcade.Window):
                     card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
                     self.spawn.append(card)
                     engine.Game.spawnCoord = cardTup[0]
-                if engine.Game.Player1.turn == True:
-                    engine.Game.Player1.hasDrawn = True
-                elif engine.Game.Player2.turn == True:
-                    engine.Game.Player2.hasDrawn = True
+                engine.Game.hasDrawn(True)
             elif len(discardClick) != 0:
                 self.sino_hatak = discardClick[len(discardClick)-1]
                 self.last_mouse_position = x, y
@@ -154,108 +151,73 @@ class DigitalBullet(arcade.Window):
         #checks if "sapaw" is initiated, i.e. if card is placed on discardPile
         p1Sapaw = arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer1)
         if p1Sapaw != [] and engine.Game.Player1.hasDrawn == False:
-            self.discardPile, engine.Game.discardCoord, engine.Game.Player1, self.cardsPlayer1,
-            engine.Game.sprite2val1 = engine.sapaw(engine.Game, p1Sapaw[0], self.discardPile, engine.Game.discardCoord,
-            engine.Game.Player1, self.cardsPlayer1, engine.Game.sprite2val1, SCREEN_WIDTH, SCREEN_HEIGHT)
-            self.refreshPlayers()
-        #dito tumigil!!!
+            self.discardPile, engine.Game.Player1.hand, self.cardsPlayer1 = engine.Game.sapaw(p1Sapaw[0],
+            self.discardPile, engine.Game.Player1.hand, engine.Game.Player1.sprite2val, self.cardsPlayer1,
+            SCREEN_WIDTH, SCREEN_HEIGHT)
+            self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+
         p2Sapaw = arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer2)
         if p2Sapaw != [] and engine.Game.Player2.hasDrawn == False:
-            self.discardPile, engine.Game.discardCoord, engine.Game.Player2, self.cardsPlayer2,
-            engine.Game.sprite2val2 = engine.sapaw(engine.Game, p2Sapaw[0], self.discardPile, engine.Game.discardCoord,
-            engine.Game.Player2, self.cardsPlayer2, engine.Game.sprite2val2, SCREEN_WIDTH, SCREEN_HEIGHT)
-            self.refreshPlayers()
+            self.discardPile, engine.Game.Player2.hand, self.cardsPlayer2 = engine.Game.sapaw(p2Sapaw[0],
+            self.discardPile, engine.Game.Player2.hand, engine.Game.Player2.sprite2val, self.cardsPlayer2,
+            SCREEN_WIDTH, SCREEN_HEIGHT)
+            self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
 
-        if arcade.check_for_collision_with_list(self.playArea, self.spawn) != []:
-            for card in arcade.check_for_collision_with_list(self.playArea, self.spawn):
-                card.position = (SCREEN_WIDTH//2+264, SCREEN_HEIGHT//2)
-                self.discardPile.append(card)
-                engine.Game.discardCoord = engine.Game.spawnCoord
-                self.spawn.remove(card)
-            if engine.Game.Player1.turn == True:
-                engine.Game.Player1.hasDrawn = False
-            elif engine.Game.Player2.turn == True:
-                engine.Game.Player2.hasDrawn = False
-            self.endTurn()
+        dispose = arcade.check_for_collision_with_list(self.playArea, self.spawn)
+        if dispose != []:
+            print("Spawn was disposed.")
+            self.discardPile, self.spawn = engine.Game.spawn2discard(dispose[0], self.discardPile, self.spawn, SCREEN_WIDTH, SCREEN_HEIGHT)
+            engine.Game.endTurn()
+            self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
 
         if len(self.spawn) > 0:
-            if arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer1) != [] and engine.Game.Player1.turn == True:
-                #make this a function
-                for card in arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer1):
-                    card.position = (SCREEN_WIDTH//2+264, SCREEN_HEIGHT//2)
-                    self.discardPile.append(card)
-                    engine.Game.discardCoord = engine.Game.sprite2val1[card]
-                    iOfC = engine.Game.Player1.hand.index(engine.Game.sprite2val1[card])
-                    engine.Game.Player1.hand.remove(engine.Game.sprite2val1[card])
-                    engine.Game.Player1.hand.insert(iOfC, engine.Game.spawnCoord)
-                    self.spawn.remove(self.spawn[0])
-                engine.Game.Player1.hasDrawn = False
-                self.endTurn()
-
-            elif arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer2) != [] and engine.Game.Player2.turn == True:
-                #same here
-                for card in arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer2):
-                    card.position = (SCREEN_WIDTH//2+264, SCREEN_HEIGHT//2)
-                    self.discardPile.append(card)
-                    engine.Game.discardCoord = engine.Game.sprite2val2[card]
-                    iOfC = engine.Game.Player2.hand.index(engine.Game.sprite2val2[card])
-                    engine.Game.Player2.hand.remove(engine.Game.sprite2val2[card])
-                    engine.Game.Player2.hand.insert(iOfC, engine.Game.spawnCoord)
-                    self.spawn.remove(self.spawn[0])
-                engine.Game.Player2.hasDrawn = False
-                self.endTurn()
+            p1SpawnSwap = arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer1)
+            p2SpawnSwap = arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer2)
+            if p1SpawnSwap != [] and engine.Game.Player1.turn == True:
+                print("Player 1 spawn swapped.")
+                self.discardPile, self.spawn, engine.Game.Player1.hand = engine.Game.spawnSwap(p1SpawnSwap[0], self.discardPile, self.spawn, engine.Game.Player1.hand, engine.Game.Player1.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
+                engine.Game.endTurn()
+                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+            elif p2SpawnSwap != [] and engine.Game.Player2.turn == True:
+                print("Player 2 spawn swapped.")
+                self.discardPile, self.spawn, engine.Game.Player2.hand = engine.Game.spawnSwap(p2SpawnSwap[0], self.discardPile, self.spawn, engine.Game.Player2.hand, engine.Game.Player2.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
+                engine.Game.endTurn()
+                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
             else:
-                self.refreshPlayers()
+                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
                 self.spawn[0].position = (SCREEN_WIDTH//2,SCREEN_HEIGHT//2)
 
         if len(self.discardPile) > 0:
-            if arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer1) != [] and engine.Game.Player1.turn == True and engine.Game.Player1.hasDrawn == False:
-                #same here
-                for card in arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer1):
-                    card.position = (SCREEN_WIDTH//2+264, SCREEN_HEIGHT//2)
-                    self.discardPile.remove(self.discardPile[len(self.discardPile)-1])
-                    self.discardPile.append(card)
-                    iOfC = engine.Game.Player1.hand.index(engine.Game.sprite2val1[card])
-                    engine.Game.Player1.hand.insert(iOfC, engine.Game.discardCoord)
-                    engine.Game.Player1.hand.remove(engine.Game.sprite2val1[card])
-                    engine.Game.discardCoord = engine.Game.sprite2val1[card]
-                self.endTurn()
-            elif arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer2) != [] and engine.Game.Player2.turn == True and engine.Game.Player2.hasDrawn == False:
-                #last na
-                for card in arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer2):
-                    card.position = (SCREEN_WIDTH//2+264, SCREEN_HEIGHT//2)
-                    self.discardPile.remove(self.discardPile[len(self.discardPile)-1])
-                    self.discardPile.append(card)
-                    iOfC = engine.Game.Player2.hand.index(engine.Game.sprite2val2[card])
-                    engine.Game.Player2.hand.insert(iOfC, engine.Game.discardCoord)
-                    engine.Game.Player2.hand.remove(engine.Game.sprite2val2[card])
-                    engine.Game.discardCoord = engine.Game.sprite2val2[card]
-                self.endTurn()
+            p1DiscardSwap = arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer1)
+            p2DiscardSwap = arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer2)
+
+            if p1DiscardSwap != [] and engine.Game.Player1.turn == True and engine.Game.Player1.hasDrawn == False:
+                print("Player 1 discard swapped.")
+                self.discardPile, engine.Game.Player1.hand = engine.Game.discardSwap(p1DiscardSwap[0], self.discardPile, engine.Game.Player1.hand, engine.Game.Player1.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
+                engine.Game.endTurn()
+                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+            elif p2DiscardSwap != [] and engine.Game.Player2.turn == True and engine.Game.Player2.hasDrawn == False:
+                print("Player 2 discard swapped.")
+                self.discardPile, engine.Game.Player2.hand = engine.Game.discardSwap(p2DiscardSwap[0], self.discardPile, engine.Game.Player2.hand, engine.Game.Player2.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
+                engine.Game.endTurn()
+                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
             else:
-                self.refreshPlayers()
+                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
                 self.discardPile[len(self.discardPile)-1].position = (SCREEN_WIDTH//2+264,SCREEN_HEIGHT//2)
 
-    def endTurn(self):
-        engine.Game.Player1.turn = not engine.Game.Player1.turn
-        engine.Game.Player2.turn = not engine.Game.Player2.turn
-        self.refreshPlayers()
+def refreshHand(hand, spriteList, tup):
+    spriteList = arcade.SpriteList()
+    sprite2val = {}
+    if len(hand) != 0:
+        for x in hand:
+            card = arcade.Sprite(engine.getimgStr(x),0.9)
+            card.position = tup
+            spriteList.move(-264,0)
+            spriteList.append(card)
+            sprite2val[card] = x
+        spriteList.move((SCREEN_WIDTH//2)-spriteList.center[0],0)
+    return spriteList, sprite2val
 
-    def refreshHand(self, hand, spriteList, tup):
-        spriteList = arcade.SpriteList()
-        sprite2val = {}
-        if len(hand) != 0:
-            for x in hand:
-                card = arcade.Sprite(engine.getimgStr(x),0.9)
-                card.position = tup
-                spriteList.move(-264,0)
-                spriteList.append(card)
-                sprite2val[card] = x
-            spriteList.move((SCREEN_WIDTH//2)-spriteList.center[0],0)
-        return spriteList, sprite2val
-
-    def refreshPlayers(self):
-        self.cardsPlayer1, engine.Game.sprite2val1 = self.refreshHand(engine.Game.Player1.hand, self.cardsPlayer1, (70, 145))
-        self.cardsPlayer2, engine.Game.sprite2val2 = self.refreshHand(engine.Game.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
 
 def main():
     """ Main method """
