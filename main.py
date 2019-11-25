@@ -14,6 +14,136 @@ SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 800
 SCREEN_TITLE = "Digital Bullet"
 
+class TextButton:
+    """ Text-based button """
+
+    def __init__(self,
+                 center_x, center_y,
+                 width, height,
+                 text,
+                 font_size=40,
+                 font_name="resources/FSEX302.ttf",
+                 face_color=arcade.color.AMAZON,
+                 highlight_color=arcade.color.AMAZON,
+                 shadow_color=arcade.color.AMAZON,
+                 button_height=2):
+        self.center_x = SCREEN_WIDTH//2
+        self.center_y = center_y
+        self.width = width
+        self.height = height
+        self.text = text
+        self.font_size = font_size
+        self.font_name = font_name
+        self.pressed = False
+        self.face_color = face_color
+        self.highlight_color = highlight_color
+        self.shadow_color = shadow_color
+        self.button_height = button_height
+
+    def draw(self):
+        """ Draw the button """
+        if not self.pressed:
+            arcade.draw_rectangle_filled(self.center_x, self.center_y, self.width,
+                                        self.height, self.face_color)
+        else:
+            arcade.draw_rectangle_filled(self.center_x, self.center_y, self.width,
+                                        self.height, arcade.color.BLACK_LEATHER_JACKET)
+
+        if not self.pressed:
+            color = self.shadow_color
+        else:
+            color = self.highlight_color
+
+        # Bottom horizontal
+        arcade.draw_line(self.center_x - self.width / 2, self.center_y - self.height / 2,
+                         self.center_x + self.width / 2, self.center_y - self.height / 2,
+                         color, self.button_height)
+
+        # Right vertical
+        arcade.draw_line(self.center_x + self.width / 2, self.center_y - self.height / 2,
+                         self.center_x + self.width / 2, self.center_y + self.height / 2,
+                         color, self.button_height)
+
+        if not self.pressed:
+            color = self.highlight_color
+        else:
+            color = self.shadow_color
+
+        # Top horizontal
+        arcade.draw_line(self.center_x - self.width / 2, self.center_y + self.height / 2,
+                         self.center_x + self.width / 2, self.center_y + self.height / 2,
+                         color, self.button_height)
+
+        # Left vertical
+        arcade.draw_line(self.center_x - self.width / 2, self.center_y - self.height / 2,
+                         self.center_x - self.width / 2, self.center_y + self.height / 2,
+                         color, self.button_height)
+
+        x = self.center_x
+        y = self.center_y
+        if not self.pressed:
+            x -= self.button_height
+            y += self.button_height
+
+        arcade.draw_text(self.text, x, y,
+                         arcade.color.WHITE, font_size=self.font_size, font_name="resources/FSEX302.ttf",
+                         width=self.width, align="center",
+                         anchor_x="center", anchor_y="center")
+
+    def on_press(self):
+        self.pressed = True
+
+    def on_release(self):
+        self.pressed = False
+
+def check_mouse_press_for_buttons(x, y, button_list):
+    """ Given an x, y, see if we need to register any button clicks. """
+    for button in button_list:
+        if x > button.center_x + button.width / 2:
+            continue
+        if x < button.center_x - button.width / 2:
+            continue
+        if y > button.center_y + button.height / 2:
+            continue
+        if y < button.center_y - button.height / 2:
+            continue
+        button.on_press()
+
+def check_mouse_release_for_buttons(_x, _y, button_list):
+    """ If a mouse button has been released, see if we need to process
+        any release events. """
+    for button in button_list:
+        if button.pressed:
+            button.on_release()
+
+class StartTextButton(TextButton):
+    def __init__(self, center_x, center_y, action_function):
+        super().__init__(center_x, (SCREEN_HEIGHT//2 + 100), 300, 80, "Start New Game", 30, "resources/FSEX302.ttf")
+        self.action_function = action_function
+
+    def on_release(self):
+        super().on_release()
+        self.action_function()
+
+
+class ContinueTextButton(TextButton):
+    def __init__(self, center_x, center_y, action_function):
+        super().__init__(center_x, (SCREEN_HEIGHT//2), 300, 80, "Continue", 30, "resources/FSEX302.ttf")
+        self.action_function = action_function
+
+    def on_release(self):
+        super().on_release()
+        self.action_function()
+
+class InstructionsTextButton(TextButton):
+    def __init__(self, center_x, center_y, action_function):
+        super().__init__(center_x, (SCREEN_HEIGHT//2 - 100), 300, 100, "Instructions", 30, "resources/FSEX302.ttf")
+        self.action_function = action_function
+
+    def on_release(self):
+        super().on_release()
+        self.action_function()
+
 class DigitalBullet(arcade.Window):
     """
     Main application class.
@@ -38,19 +168,25 @@ class DigitalBullet(arcade.Window):
         self.swap_sound = arcade.load_sound("resources/cardShove3.wav")
         self.place_sound = arcade.load_sound("resources/cardPlace1.wav")
         self.wrong_sound = arcade.load_sound("resources/buzzer_x.wav")
+        self.playScreen = True
 
     def setup(self):
         # Create your sprites and sprite lists here
+        self.button_list = []
+
+        play_button = StartTextButton(60, 570, self.play_program)
+        self.button_list.append(play_button)
+
+        continue_button = ContinueTextButton(60, 515, self.continue_program)
+        self.button_list.append(continue_button)
+
+        instructions_button = InstructionsTextButton(60, 500, self.display_instructions)
+        self.button_list.append(instructions_button)
+
         self.cardsPlayer1 = arcade.SpriteList()
         self.cardsPlayer2 = arcade.SpriteList()
 
         self.discardPile = arcade.SpriteList()
-
-        first = arcade.Sprite(engine.getimgStr(engine.Game.discardCoord), 0.9)
-        first.center_x = (SCREEN_WIDTH//2+(264))
-        first.center_y = (SCREEN_HEIGHT//2)
-
-        self.discardPile.append(first)
 
         self.deckShow = arcade.SpriteList()
         deckguy = arcade.Sprite("resources/cardBack_red1.png", 0.9)
@@ -64,34 +200,57 @@ class DigitalBullet(arcade.Window):
         self.playArea.center_x = (SCREEN_WIDTH//2+(264))
         self.playArea.center_y = (SCREEN_HEIGHT//2)
 
-        self.cardsPlayer1, engine.Game.Player1.sprite2val = refreshHand(engine.Game.Player1.hand, self.cardsPlayer1, (70, (145)))
-        self.cardsPlayer2, engine.Game.Player2.sprite2val = refreshHand(engine.Game.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-(145)))
+    def bootStart(self):
+        first = arcade.Sprite(engine.getimgStr(engine.Game.discardCoord), 0.9)
+        first.center_x = (SCREEN_WIDTH//2+(264))
+        first.center_y = (SCREEN_HEIGHT//2)
+        self.discardPile.append(first)
+        self.cardsPlayer1,  self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,  self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+
+    def play_program(self):
+        self.button_list = []
+        self.playScreen = False
+        #code for making Game
+        engine.Game = engine.Game([])
+        self.bootStart()
+
+    def continue_program(self):
+        self.button_list = []
+        self.playScreen = False
+        #code for making Game
+        engine.Game = engine.Game(engine.loadProgress())
+        self.bootStart()
+
+    def display_instructions(self):
+        print("Insert Instructions Here")
 
     def on_draw(self):
         """
         Render the screen.
         """
-
         # This command should happen before we start drawing. It will clear
         # the screen to the background color, and erase what we drew last frame.
         arcade.start_render()
-
-        # Call draw() on all your sprite lists below
-        if engine.Game.Player1.turn == True:
-            arcade.draw_text("YOUR TURN",
-                         SCREEN_WIDTH//2, SCREEN_WIDTH-(1325), arcade.color.WHITE, 50, width=500, align="center",
-                         anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf")
+        if self.playScreen:
+            for button in self.button_list:
+                button.draw()
         else:
-            arcade.draw_text("YOUR TURN",
-                         SCREEN_WIDTH//2, SCREEN_WIDTH-(900), arcade.color.WHITE, 50, width=500, align="center",
-                         anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf", rotation = 180.0)
-        self.playArea.draw()
-        if len(engine.Game.deck) != 0:
-            self.deckShow.draw()
-        self.discardPile.draw()
-        self.cardsPlayer1.draw()
-        self.cardsPlayer2.draw()
-        self.spawn.draw()
+            # Call draw() on all your sprite lists below
+            if engine.Game.Player1.turn == True:
+                arcade.draw_text("YOUR TURN",
+                            SCREEN_WIDTH//2, SCREEN_WIDTH-(1325), arcade.color.WHITE, 50, width=500, align="center",
+                            anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf")
+            else:
+                arcade.draw_text("YOUR TURN",
+                            SCREEN_WIDTH//2, SCREEN_WIDTH-(1075), arcade.color.WHITE, 50, width=500, align="center",
+                            anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf", rotation = 180.0)
+            self.playArea.draw()
+            if len(engine.Game.deck) != 0:
+                self.deckShow.draw()
+            self.discardPile.draw()
+            self.cardsPlayer1.draw()
+            self.cardsPlayer2.draw()
+            self.spawn.draw()
 
 
     def on_update(self, delta_time):
@@ -102,12 +261,12 @@ class DigitalBullet(arcade.Window):
         """
         if self.sino_hatak is not None:
             self.sino_hatak.position = self.last_mouse_position
-
-        self.playArea.update()
-        self.spawn.update()
-        self.discardPile.update()
-        self.cardsPlayer1.update()
-        self.cardsPlayer2.update()
+        if not self.playScreen:
+            self.playArea.update()
+            self.spawn.update()
+            self.discardPile.update()
+            self.cardsPlayer1.update()
+            self.cardsPlayer2.update()
 
     def on_mouse_motion(self, x, y, delta_x, delta_y):
         """
@@ -121,8 +280,8 @@ class DigitalBullet(arcade.Window):
         """
         Called when the user presses a mouse button.
         """
+        check_mouse_press_for_buttons(x, y, self.button_list)
         if button == arcade.MOUSE_BUTTON_LEFT:
-
             toDrag = arcade.get_sprites_at_point((x,y), self.cardsPlayer1)
             toDrag += arcade.get_sprites_at_point((x,y), self.cardsPlayer2)
             toDrag += arcade.get_sprites_at_point((x,y), self.spawn)
@@ -133,15 +292,8 @@ class DigitalBullet(arcade.Window):
                 self.last_mouse_position = x, y
             elif len(deckClick) > 0 and len(self.spawn) == 0:
                 cardTup, engine.Game.deck = engine.drawfromDeck(1, engine.Game.deck)
-                if (cardTup[0])[1] == 10:
-                    pass
-                elif (cardTup[0])[1] == 11:
-                    pass
-                elif (cardTup[0])[1] == 12:
-                    pass
-                elif (cardTup[0])[1] == 13:
-                    pass
-                else:
+                #put abilities here
+                if True:
                     card = arcade.Sprite(engine.getimgStr(cardTup[0]), 0.9)
                     card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
                     self.spawn.append(card)
@@ -157,6 +309,7 @@ class DigitalBullet(arcade.Window):
         """
         Called when a user releases a mouse button.
         """
+        check_mouse_release_for_buttons(x, y, self.button_list)
         #releases the card being dragged at mouse release
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.sino_hatak = None
