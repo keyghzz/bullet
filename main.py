@@ -11,7 +11,7 @@ import arcade
 import two as engine
 
 SCREEN_WIDTH = 1600
-SCREEN_HEIGHT = 1000
+SCREEN_HEIGHT = 800
 SCREEN_TITLE = "Digital Bullet"
 
 class DigitalBullet(arcade.Window):
@@ -34,6 +34,10 @@ class DigitalBullet(arcade.Window):
         self.discardPile = None
         self.deckShow = None
         self.spawn = None
+        self.draw_sound = arcade.load_sound("resources/cardTakeOutPackage1.wav")
+        self.swap_sound = arcade.load_sound("resources/cardShove3.wav")
+        self.place_sound = arcade.load_sound("resources/cardPlace1.wav")
+        self.wrong_sound = arcade.load_sound("resources/buzzer_x.wav")
 
     def setup(self):
         # Create your sprites and sprite lists here
@@ -43,25 +47,25 @@ class DigitalBullet(arcade.Window):
         self.discardPile = arcade.SpriteList()
 
         first = arcade.Sprite(engine.getimgStr(engine.Game.discardCoord), 0.9)
-        first.center_x = (SCREEN_WIDTH//2+264)
+        first.center_x = (SCREEN_WIDTH//2+(264))
         first.center_y = (SCREEN_HEIGHT//2)
 
         self.discardPile.append(first)
 
         self.deckShow = arcade.SpriteList()
         deckguy = arcade.Sprite("resources/cardBack_red1.png", 0.9)
-        deckguy.center_x = (SCREEN_WIDTH//2-264)
+        deckguy.center_x = (SCREEN_WIDTH//2-(264))
         deckguy.center_y = (SCREEN_HEIGHT//2)
         self.deckShow.append(deckguy)
 
         self.spawn = arcade.SpriteList()
 
         self.playArea = arcade.Sprite("resources/playArea.png", 0.85)
-        self.playArea.center_x = (SCREEN_WIDTH//2+264)
+        self.playArea.center_x = (SCREEN_WIDTH//2+(264))
         self.playArea.center_y = (SCREEN_HEIGHT//2)
 
-        self.cardsPlayer1, engine.Game.Player1.sprite2val = refreshHand(engine.Game.Player1.hand, self.cardsPlayer1, (70, 145))
-        self.cardsPlayer2, engine.Game.Player2.sprite2val = refreshHand(engine.Game.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-145))
+        self.cardsPlayer1, engine.Game.Player1.sprite2val = refreshHand(engine.Game.Player1.hand, self.cardsPlayer1, (70, (145)))
+        self.cardsPlayer2, engine.Game.Player2.sprite2val = refreshHand(engine.Game.Player2.hand, self.cardsPlayer2, (70, SCREEN_HEIGHT-(145)))
 
     def on_draw(self):
         """
@@ -75,11 +79,11 @@ class DigitalBullet(arcade.Window):
         # Call draw() on all your sprite lists below
         if engine.Game.Player1.turn == True:
             arcade.draw_text("YOUR TURN",
-                         SCREEN_WIDTH//2, 300, arcade.color.WHITE, 50, width=500, align="center",
+                         SCREEN_WIDTH//2, SCREEN_WIDTH-(1325), arcade.color.WHITE, 50, width=500, align="center",
                          anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf")
         else:
             arcade.draw_text("YOUR TURN",
-                         SCREEN_WIDTH//2, 700, arcade.color.WHITE, 50, width=500, align="center",
+                         SCREEN_WIDTH//2, SCREEN_WIDTH-(900), arcade.color.WHITE, 50, width=500, align="center",
                          anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf", rotation = 180.0)
         self.playArea.draw()
         if len(engine.Game.deck) != 0:
@@ -114,6 +118,9 @@ class DigitalBullet(arcade.Window):
             self.sino_hatak.position = self.last_mouse_position
 
     def on_mouse_press(self, x, y, button, key_modifiers):
+        """
+        Called when the user presses a mouse button.
+        """
         if button == arcade.MOUSE_BUTTON_LEFT:
 
             toDrag = arcade.get_sprites_at_point((x,y), self.cardsPlayer1)
@@ -126,19 +133,25 @@ class DigitalBullet(arcade.Window):
                 self.last_mouse_position = x, y
             elif len(deckClick) > 0 and len(self.spawn) == 0:
                 cardTup, engine.Game.deck = engine.drawfromDeck(1, engine.Game.deck)
-                card = arcade.Sprite(engine.getimgStr(cardTup[0]), 0.9)
-                card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
-                self.spawn.append(card)
-                engine.Game.spawnCoord = cardTup[0]
-                engine.Game.hasDrawn(True)
+                if (cardTup[0])[1] == 10:
+                    pass
+                elif (cardTup[0])[1] == 11:
+                    pass
+                elif (cardTup[0])[1] == 12:
+                    pass
+                elif (cardTup[0])[1] == 13:
+                    pass
+                else:
+                    card = arcade.Sprite(engine.getimgStr(cardTup[0]), 0.9)
+                    card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
+                    self.spawn.append(card)
+                    engine.Game.spawnCoord = cardTup[0]
+                    engine.Game.hasDrawn(True)
+                    arcade.play_sound(self.draw_sound)
             elif len(discardClick) != 0:
                 self.sino_hatak = discardClick[len(discardClick)-1]
                 self.last_mouse_position = x, y
                     #if len==0 INITIATE WIN SEQUENCE
-
-        """
-        Called when the user presses a mouse button.
-        """
 
     def on_mouse_release(self, x, y, button, key_modifiers):
         """
@@ -155,6 +168,7 @@ class DigitalBullet(arcade.Window):
             self.discardPile, engine.Game.Player1.hand, engine.Game.Player1.sprite2val, self.cardsPlayer1,
             SCREEN_WIDTH, SCREEN_HEIGHT)
             self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+            arcade.play_sound(self.place_sound)
 
         p2Sapaw = arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer2)
         if p2Sapaw != [] and engine.Game.Player2.hasDrawn == False:
@@ -162,6 +176,7 @@ class DigitalBullet(arcade.Window):
             self.discardPile, engine.Game.Player2.hand, engine.Game.Player2.sprite2val, self.cardsPlayer2,
             SCREEN_WIDTH, SCREEN_HEIGHT)
             self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+            arcade.play_sound(self.place_sound)
 
         dispose = arcade.check_for_collision_with_list(self.playArea, self.spawn)
         if dispose != []:
@@ -169,6 +184,7 @@ class DigitalBullet(arcade.Window):
             self.discardPile, self.spawn = engine.Game.spawn2discard(dispose[0], self.discardPile, self.spawn, SCREEN_WIDTH, SCREEN_HEIGHT)
             engine.Game.endTurn()
             self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+            arcade.play_sound(self.place_sound)
 
         if len(self.spawn) > 0:
             p1SpawnSwap = arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer1)
@@ -178,11 +194,15 @@ class DigitalBullet(arcade.Window):
                 self.discardPile, self.spawn, engine.Game.Player1.hand = engine.Game.spawnSwap(p1SpawnSwap[0], self.discardPile, self.spawn, engine.Game.Player1.hand, engine.Game.Player1.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
                 engine.Game.endTurn()
                 self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+                arcade.play_sound(self.swap_sound)
+
             elif p2SpawnSwap != [] and engine.Game.Player2.turn == True:
                 print("Player 2 spawn swapped.")
                 self.discardPile, self.spawn, engine.Game.Player2.hand = engine.Game.spawnSwap(p2SpawnSwap[0], self.discardPile, self.spawn, engine.Game.Player2.hand, engine.Game.Player2.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
                 engine.Game.endTurn()
                 self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+                arcade.play_sound(self.swap_sound)
+
             else:
                 self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
                 self.spawn[0].position = (SCREEN_WIDTH//2,SCREEN_HEIGHT//2)
@@ -196,11 +216,15 @@ class DigitalBullet(arcade.Window):
                 self.discardPile, engine.Game.Player1.hand = engine.Game.discardSwap(p1DiscardSwap[0], self.discardPile, engine.Game.Player1.hand, engine.Game.Player1.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
                 engine.Game.endTurn()
                 self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+                arcade.play_sound(self.swap_sound)
+
             elif p2DiscardSwap != [] and engine.Game.Player2.turn == True and engine.Game.Player2.hasDrawn == False:
                 print("Player 2 discard swapped.")
                 self.discardPile, engine.Game.Player2.hand = engine.Game.discardSwap(p2DiscardSwap[0], self.discardPile, engine.Game.Player2.hand, engine.Game.Player2.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
                 engine.Game.endTurn()
                 self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+                arcade.play_sound(self.swap_sound)
+
             else:
                 self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
                 self.discardPile[len(self.discardPile)-1].position = (SCREEN_WIDTH//2+264,SCREEN_HEIGHT//2)

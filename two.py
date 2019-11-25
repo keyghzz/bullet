@@ -25,8 +25,6 @@ class Player:
         self.turn = False
         self.hasDrawn = False
         self.sprite2val = {}
-    def get_sprite2val(self, card):
-        return self.sprite2val[card]
 
 '''
 note:
@@ -55,7 +53,7 @@ class Game:
 
     def sapaw(self, card, discardPile, hand, sprite2val, cardsPlayer, SCREEN_WIDTH, SCREEN_HEIGHT):
         if (sprite2val[card])[1] == self.discardCoord[1]:
-            card.position = (SCREEN_WIDTH//2+264, SCREEN_HEIGHT//2)
+            card.position = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
             discardPile.append(card)
             self.discardCoord = sprite2val[card]
             cardsPlayer.remove(card)
@@ -67,7 +65,7 @@ class Game:
         return discardPile, hand, cardsPlayer
 
     def spawn2discard(self, card, discardPile, spawn, SCREEN_WIDTH, SCREEN_HEIGHT):
-        card.position = (SCREEN_WIDTH//2+264, SCREEN_HEIGHT//2)
+        card.position = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
         discardPile.append(card)
         self.discardCoord = self.spawnCoord
         spawn.remove(card)
@@ -81,7 +79,7 @@ class Game:
             self.Player2.hasDrawn = bool
 
     def spawnSwap(self, card, discardPile, spawn, hand, sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT):
-        card.position = (SCREEN_WIDTH//2+264, SCREEN_HEIGHT//2)
+        card.position = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
         discardPile.append(card)
         iOfC = hand.index(sprite2val[card])
         self.discardCoord = sprite2val[card]
@@ -92,7 +90,7 @@ class Game:
         return discardPile, spawn, hand
 
     def discardSwap(self, card, discardPile, hand, sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT):
-        card.position = (SCREEN_WIDTH//2+264, SCREEN_HEIGHT//2)
+        card.position = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
         discardPile.pop()
         discardPile.append(card)
         iOfC = hand.index(sprite2val[card])
@@ -111,9 +109,9 @@ class Game:
 
     def refreshPlayers(self, cardsPlayer1, cardsPlayer2, sprite2val1, sprite2val2, hand1, hand2, SCREEN_HEIGHT):
         cardsPlayer1, sprite2val1 = main.refreshHand(hand1, cardsPlayer1, (70, 145))
-        cardsPlayer2, sprite2val2 = main.refreshHand(hand2, cardsPlayer2, (70, SCREEN_HEIGHT-145))
+        cardsPlayer2, sprite2val2 = main.refreshHand(hand2, cardsPlayer2, (70, SCREEN_HEIGHT-(145)))
         return cardsPlayer1, cardsPlayer2, sprite2val1, sprite2val2
-        
+
 Game = Game([])
 print("Player 1 was dealt the following cards: " + ", ".join(map(str, Game.Player1.hand)))
 print("Player 2 was dealt the following cards: " + ", ".join(map(str, Game.Player2.hand)))
