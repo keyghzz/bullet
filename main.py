@@ -35,6 +35,7 @@ class TextButton:
         self.font_size = font_size
         self.font_name = font_name
         self.pressed = False
+        self.hover = False
         self.face_color = face_color
         self.highlight_color = highlight_color
         self.shadow_color = shadow_color
@@ -85,16 +86,28 @@ class TextButton:
             x -= self.button_height
             y += self.button_height
 
-        arcade.draw_text(self.text, x, y,
-                         arcade.color.WHITE, font_size=self.font_size, font_name="resources/FSEX302.ttf",
-                         width=self.width, align="center",
-                         anchor_x="center", anchor_y="center")
+        if not self.hover:
+            arcade.draw_text(self.text, x, y,
+                            arcade.color.WHITE, font_size=self.font_size, font_name="resources/FSEX302.ttf",
+                            width=self.width, align="center",
+                            anchor_x="center", anchor_y="center")
+        else:
+            arcade.draw_text(self.text, x, y,
+                            arcade.color.DAFFODIL, font_size=self.font_size, font_name="resources/FSEX302.ttf",
+                            width=self.width, align="center",
+                            anchor_x="center", anchor_y="center")
 
     def on_press(self):
         self.pressed = True
 
     def on_release(self):
         self.pressed = False
+
+    def hovering(self):
+        self.hover = True
+
+    def not_hovering(self):
+        self.hover = False
 
 def check_mouse_press_for_buttons(x, y, button_list):
     """ Given an x, y, see if we need to register any button clicks. """
@@ -109,6 +122,7 @@ def check_mouse_press_for_buttons(x, y, button_list):
             continue
         button.on_press()
 
+
 def check_mouse_release_for_buttons(_x, _y, button_list):
     """ If a mouse button has been released, see if we need to process
         any release events. """
@@ -116,9 +130,26 @@ def check_mouse_release_for_buttons(_x, _y, button_list):
         if button.pressed:
             button.on_release()
 
+def check_mouse_hovering_for_buttons(x, y, button_list):
+    """ Given an x, y, see if we need to register any button clicks. """
+    for button in button_list:
+        if x > button.center_x + button.width / 2:
+            button.not_hovering()
+            continue
+        if x < button.center_x - button.width / 2:
+            button.not_hovering()
+            continue
+        if y > button.center_y + button.height / 2:
+            button.not_hovering()
+            continue
+        if y < button.center_y - button.height / 2:
+            button.not_hovering()
+            continue
+        button.hovering()
+
 class StartTextButton(TextButton):
     def __init__(self, center_x, center_y, action_function):
-        super().__init__(center_x, (SCREEN_HEIGHT//2 + 100), 300, 80, "Start New Game", 30, "resources/FSEX302.ttf")
+        super().__init__(center_x, (SCREEN_HEIGHT//2 + 120), 500, 100, "Start New Game", 35, "resources/FSEX302.ttf")
         self.action_function = action_function
 
     def on_release(self):
@@ -128,7 +159,7 @@ class StartTextButton(TextButton):
 
 class ContinueTextButton(TextButton):
     def __init__(self, center_x, center_y, action_function):
-        super().__init__(center_x, (SCREEN_HEIGHT//2), 300, 80, "Continue", 30, "resources/FSEX302.ttf")
+        super().__init__(center_x, (SCREEN_HEIGHT//2), 500, 100, "Continue", 35, "resources/FSEX302.ttf")
         self.action_function = action_function
 
     def on_release(self):
@@ -137,7 +168,7 @@ class ContinueTextButton(TextButton):
 
 class InstructionsTextButton(TextButton):
     def __init__(self, center_x, center_y, action_function):
-        super().__init__(center_x, (SCREEN_HEIGHT//2 - 100), 300, 100, "Instructions", 30, "resources/FSEX302.ttf")
+        super().__init__(center_x, (SCREEN_HEIGHT//2 - 120), 500, 100, "Instructions", 35, "resources/FSEX302.ttf")
         self.action_function = action_function
 
     def on_release(self):
@@ -169,19 +200,20 @@ class DigitalBullet(arcade.Window):
         self.place_sound = arcade.load_sound("resources/cardPlace1.wav")
         self.wrong_sound = arcade.load_sound("resources/buzzer_x.wav")
         self.playScreen = True
+        self.requestInstructions = False
 
     def setup(self):
         # Create your sprites and sprite lists here
-        self.button_list = []
+        self.button_list_loadingScreen = [] #buttons in loading screen
 
         play_button = StartTextButton(60, 570, self.play_program)
-        self.button_list.append(play_button)
+        self.button_list_loadingScreen.append(play_button)
 
         continue_button = ContinueTextButton(60, 515, self.continue_program)
-        self.button_list.append(continue_button)
+        self.button_list_loadingScreen.append(continue_button)
 
         instructions_button = InstructionsTextButton(60, 500, self.display_instructions)
-        self.button_list.append(instructions_button)
+        self.button_list_loadingScreen.append(instructions_button)
 
         self.cardsPlayer1 = arcade.SpriteList()
         self.cardsPlayer2 = arcade.SpriteList()
@@ -208,14 +240,14 @@ class DigitalBullet(arcade.Window):
         self.cardsPlayer1,  self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,  self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
 
     def play_program(self):
-        self.button_list = []
+        self.button_list_loadingScreen = []
         self.playScreen = False
         #code for making Game
         engine.Game = engine.Game([])
         self.bootStart()
 
     def continue_program(self):
-        self.button_list = []
+        self.button_list_loadingScreen = []
         self.playScreen = False
         #code for making Game
         engine.Game = engine.Game(engine.loadProgress())
@@ -232,7 +264,10 @@ class DigitalBullet(arcade.Window):
         # the screen to the background color, and erase what we drew last frame.
         arcade.start_render()
         if self.playScreen:
-            for button in self.button_list:
+            for button in self.button_list_loadingScreen:
+                button.draw()
+        elif self.requestInstructions:
+            for button in self.button_list_instructions:
                 button.draw()
         else:
             # Call draw() on all your sprite lists below
@@ -272,6 +307,11 @@ class DigitalBullet(arcade.Window):
         """
         Called whenever the mouse moves.
         """
+        if self.playScreen:
+            check_mouse_hovering_for_buttons(x, y, self.button_list_loadingScreen)
+        elif self.requestInstructions:
+            check_mouse_hovering_for_buttons(x, y, self.button_list_instructions)
+
         if self.sino_hatak is not None:
             self.last_mouse_position = x, y
             self.sino_hatak.position = self.last_mouse_position
@@ -280,7 +320,10 @@ class DigitalBullet(arcade.Window):
         """
         Called when the user presses a mouse button.
         """
-        check_mouse_press_for_buttons(x, y, self.button_list)
+        if self.playScreen:
+            check_mouse_press_for_buttons(x, y, self.button_list_loadingScreen)
+            check_mouse_press_for_buttons(x, y, self.button_list_instructions)
+
         if button == arcade.MOUSE_BUTTON_LEFT:
             toDrag = arcade.get_sprites_at_point((x,y), self.cardsPlayer1)
             toDrag += arcade.get_sprites_at_point((x,y), self.cardsPlayer2)
@@ -309,7 +352,9 @@ class DigitalBullet(arcade.Window):
         """
         Called when a user releases a mouse button.
         """
-        check_mouse_release_for_buttons(x, y, self.button_list)
+        if self.playScreen:
+            check_mouse_release_for_buttons(x, y, self.button_list_loadingScreen)
+            check_mouse_release_for_buttons(x, y, self.button_list_instructions)
         #releases the card being dragged at mouse release
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.sino_hatak = None
@@ -317,19 +362,23 @@ class DigitalBullet(arcade.Window):
         #checks if "sapaw" is initiated, i.e. if card is placed on discardPile
         p1Sapaw = arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer1)
         if p1Sapaw != [] and engine.Game.Player1.hasDrawn == False:
-            self.discardPile, engine.Game.Player1.hand, self.cardsPlayer1 = engine.Game.sapaw(p1Sapaw[0],
+            self.discardPile, engine.Game.Player1.hand, self.cardsPlayer1, isWrong = engine.Game.sapaw(p1Sapaw[0],
             self.discardPile, engine.Game.Player1.hand, engine.Game.Player1.sprite2val, self.cardsPlayer1,
             SCREEN_WIDTH, SCREEN_HEIGHT)
             self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
             arcade.play_sound(self.place_sound)
+            if isWrong:
+                arcade.play_sound(self.wrong_sound)
 
         p2Sapaw = arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer2)
         if p2Sapaw != [] and engine.Game.Player2.hasDrawn == False:
-            self.discardPile, engine.Game.Player2.hand, self.cardsPlayer2 = engine.Game.sapaw(p2Sapaw[0],
+            self.discardPile, engine.Game.Player2.hand, self.cardsPlayer2, isWrong = engine.Game.sapaw(p2Sapaw[0],
             self.discardPile, engine.Game.Player2.hand, engine.Game.Player2.sprite2val, self.cardsPlayer2,
             SCREEN_WIDTH, SCREEN_HEIGHT)
             self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
             arcade.play_sound(self.place_sound)
+            if isWrong:
+                arcade.play_sound(self.wrong_sound)
 
         dispose = arcade.check_for_collision_with_list(self.playArea, self.spawn)
         if dispose != []:

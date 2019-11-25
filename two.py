@@ -60,6 +60,7 @@ class Game:
 
     def sapaw(self, card, discardPile, hand, sprite2val, cardsPlayer, SCREEN_WIDTH, SCREEN_HEIGHT):
         if (sprite2val[card])[1] == self.discardCoord[1]:
+            isWrong = False
             card.position = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
             discardPile.append(card)
             self.discardCoord = sprite2val[card]
@@ -67,10 +68,11 @@ class Game:
             discardCoord = sprite2val[card]
             hand.remove(sprite2val[card])
         else:
+            isWrong = True
             penalty, Game.deck = drawfromDeck(1, Game.deck)
             hand.append(penalty[0])
         self.saveProgress()
-        return discardPile, hand, cardsPlayer
+        return discardPile, hand, cardsPlayer, isWrong
 
     def spawn2discard(self, card, discardPile, spawn, SCREEN_WIDTH, SCREEN_HEIGHT):
         card.position = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
