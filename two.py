@@ -2,8 +2,6 @@ import random
 import main
 import os
 
-#TODO: specify sprite2val as function input
-
 def deckGo():
     deck = [(x%4,y%13) for x,y in enumerate(range(0,52))]
     deck.extend([(4,13),(4,13)])

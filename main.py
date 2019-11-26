@@ -41,6 +41,7 @@ class DigitalBullet(arcade.Window):
         self.wrong_sound = arcade.load_sound("resources/buzzer_x.wav")
         self.playScreen = True
         self.requestInstructions = False
+        self.bulletList = None
 
     def setup(self):
         # Create your sprites and sprite lists here
@@ -72,12 +73,27 @@ class DigitalBullet(arcade.Window):
         self.playArea.center_x = (SCREEN_WIDTH//2+(264))
         self.playArea.center_y = (SCREEN_HEIGHT//2)
 
+        self.bulletList = arcade.SpriteList()
+
     def bootStart(self):
         first = arcade.Sprite(engine.getimgStr(engine.Game.discardCoord), 0.9)
         first.center_x = (SCREEN_WIDTH//2+(264))
         first.center_y = (SCREEN_HEIGHT//2)
         self.discardPile.append(first)
-        self.cardsPlayer1,  self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,  self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+
+        bullet1 = arcade.Sprite("resources/bullet.png")
+        bullet1.position = (SCREEN_WIDTH*3//4, 275)
+        bullet1.bind = "p1"
+
+        bullet2 = arcade.Sprite("resources/bullet2.png")
+        bullet2.position = (SCREEN_WIDTH//4, 525)
+        bullet2.bind = "p2"
+
+
+        self.bulletList.append(bullet1)
+        self.bulletList.append(bullet2)
+
+        self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,  self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
 
     def play_program(self):
         self.button_list_loadingScreen = []
@@ -113,13 +129,14 @@ class DigitalBullet(arcade.Window):
             # Call draw() on all your sprite lists below
             if engine.Game.Player1.turn == True:
                 arcade.draw_text("YOUR TURN",
-                            SCREEN_WIDTH//2, SCREEN_WIDTH-(1325), arcade.color.WHITE, 50, width=500, align="center",
+                            SCREEN_WIDTH//2, 275, arcade.color.WHITE, 50, width=500, align="center",
                             anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf")
             else:
                 arcade.draw_text("YOUR TURN",
-                            SCREEN_WIDTH//2, SCREEN_WIDTH-(1075), arcade.color.WHITE, 50, width=500, align="center",
+                            SCREEN_WIDTH//2, 525, arcade.color.WHITE, 50, width=500, align="center",
                             anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf", rotation = 180.0)
             self.playArea.draw()
+            self.bulletList.draw()
             if len(engine.Game.deck) != 0:
                 self.deckShow.draw()
             self.discardPile.draw()
@@ -170,6 +187,9 @@ class DigitalBullet(arcade.Window):
             toDrag += arcade.get_sprites_at_point((x,y), self.spawn)
             deckClick = arcade.get_sprites_at_point((x,y), self.deckShow)
             discardClick = arcade.get_sprites_at_point((x,y), self.discardPile)
+            bulletClick = arcade.get_sprites_at_point((x,y), self.bulletList)
+
+
             if len(toDrag) > 0:
                 self.sino_hatak = toDrag[0]
                 self.last_mouse_position = x, y
@@ -186,7 +206,11 @@ class DigitalBullet(arcade.Window):
             elif len(discardClick) != 0:
                 self.sino_hatak = discardClick[len(discardClick)-1]
                 self.last_mouse_position = x, y
-                    #if len==0 INITIATE WIN SEQUENCE
+            elif len(bulletClick) != 0:
+                if bulletClick[0].bind == 'p1':
+                    print("Player 1 has initiated bullet.")
+                elif bulletClick[0].bind == 'p2':
+                    print("Player 2 has initiated bullet.")
 
     def on_mouse_release(self, x, y, button, key_modifiers):
         """
