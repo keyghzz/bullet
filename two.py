@@ -162,7 +162,7 @@ def loadProgress():
         deck[len(deck)-1] = deck[len(deck)-1][:len(deck[len(deck)-1])-2]
         deck = [tuple([int(x[1]), int(x[4:])]) for x in deck[:len(deck)-2]]
         toContinue = [hand1, turn1, hand2, turn2, discardCoord, deck]
+        sav.close()
     else:
         pass
-    sav.close()
     return toContinue
