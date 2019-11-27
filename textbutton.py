@@ -139,7 +139,7 @@ def check_mouse_hovering_for_buttons(x, y, button_list):
 
 class StartTextButton(TextButton):
     def __init__(self, center_x, center_y, action_function):
-        super().__init__(center_x, (SCREEN_HEIGHT//2 + 120), 500, 100, "Start New Game", 35, "resources/FSEX302.ttf")
+        super().__init__(center_x, (SCREEN_HEIGHT//2 + 105), 350, 65, "Start New Game", 35, "resources/FSEX302.ttf")
         self.action_function = action_function
 
     def on_release(self):
@@ -149,7 +149,7 @@ class StartTextButton(TextButton):
 
 class ContinueTextButton(TextButton):
     def __init__(self, center_x, center_y, action_function):
-        super().__init__(center_x, (SCREEN_HEIGHT//2), 500, 100, "Continue", 35, "resources/FSEX302.ttf")
+        super().__init__(center_x, (SCREEN_HEIGHT//2 + 35), 350, 65, "Continue", 35, "resources/FSEX302.ttf")
         self.action_function = action_function
 
     def on_release(self):
@@ -158,7 +158,16 @@ class ContinueTextButton(TextButton):
 
 class InstructionsTextButton(TextButton):
     def __init__(self, center_x, center_y, action_function):
-        super().__init__(center_x, (SCREEN_HEIGHT//2 - 120), 500, 100, "Instructions", 35, "resources/FSEX302.ttf")
+        super().__init__(center_x, (SCREEN_HEIGHT//2 - 35), 350, 65, "Instructions", 35, "resources/FSEX302.ttf")
+        self.action_function = action_function
+
+    def on_release(self):
+        super().on_release()
+        self.action_function()
+
+class LeaderboardTextButton(TextButton):
+    def __init__(self, center_x, center_y, action_function):
+        super().__init__(center_x, (SCREEN_HEIGHT//2 - 105), 350, 65, "Leaderboard", 35, "resources/FSEX302.ttf")
         self.action_function = action_function
 
     def on_release(self):

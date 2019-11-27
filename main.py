@@ -56,6 +56,9 @@ class DigitalBullet(arcade.Window):
         instructions_button = textbutton.InstructionsTextButton(60, 500, self.display_instructions)
         self.button_list_loadingScreen.append(instructions_button)
 
+        leaderboard_button = textbutton.LeaderboardTextButton(60, 500, self.display_leaderboard)
+        self.button_list_loadingScreen.append(leaderboard_button)
+
         self.cardsPlayer1 = arcade.SpriteList()
         self.cardsPlayer2 = arcade.SpriteList()
 
@@ -110,6 +113,9 @@ class DigitalBullet(arcade.Window):
 
     def display_instructions(self):
         print("Insert Instructions Here")
+
+    def display_leaderboard(self):
+        print("Leaderboard Displayed")
 
     def on_draw(self):
         """
