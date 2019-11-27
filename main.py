@@ -300,7 +300,7 @@ def refreshHand(hand, spriteList, tup):
     sprite2val = {}
     if len(hand) != 0:
         for x in hand:
-            card = arcade.Sprite(engine.getimgStr(x),0.9)
+            card = arcade.Sprite("resources/cardBack_red1.png",0.9)
             card.position = tup
             spriteList.move(-264,0)
             spriteList.append(card)
@@ -308,13 +308,17 @@ def refreshHand(hand, spriteList, tup):
         spriteList.move((SCREEN_WIDTH//2)-spriteList.center[0],0)
     return spriteList, sprite2val
 
+def val2sprite(val, spritepos):
+    new = arcade.Sprite(engine.getimgStr(val), 0.9)
+    new.position = spritepos
+    return new
+
 
 def main():
     """ Main method """
     laro = DigitalBullet(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     laro.setup()
     arcade.run()
-
 
 if __name__ == "__main__":
     main()

@@ -59,11 +59,10 @@ class Game:
     def sapaw(self, card, discardPile, hand, sprite2val, cardsPlayer, SCREEN_WIDTH, SCREEN_HEIGHT):
         if (sprite2val[card])[1] == self.discardCoord[1]:
             isWrong = False
-            card.position = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
-            discardPile.append(card)
+            cardpos = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
+            discardPile.append(main.val2sprite(sprite2val[card], cardpos))
             self.discardCoord = sprite2val[card]
             cardsPlayer.remove(card)
-            discardCoord = sprite2val[card]
             hand.remove(sprite2val[card])
         else:
             isWrong = True
@@ -89,8 +88,8 @@ class Game:
             self.Player2.hasDrawn = bool
 
     def spawnSwap(self, card, discardPile, spawn, hand, sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT):
-        card.position = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
-        discardPile.append(card)
+        cardpos = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
+        discardPile.append(main.val2sprite(sprite2val[card], cardpos))
         iOfC = hand.index(sprite2val[card])
         self.discardCoord = sprite2val[card]
         hand.remove(sprite2val[card])
@@ -100,9 +99,9 @@ class Game:
         return discardPile, spawn, hand
 
     def discardSwap(self, card, discardPile, hand, sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT):
-        card.position = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
+        cardpos = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
         discardPile.pop()
-        discardPile.append(card)
+        discardPile.append(main.val2sprite(sprite2val[card], cardpos))
         iOfC = hand.index(sprite2val[card])
         hand.remove(sprite2val[card])
         hand.insert(iOfC, self.discardCoord)
