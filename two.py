@@ -37,6 +37,10 @@ class Game:
     def __init__(self, toContinue):
         self.Player1 = Player()
         self.Player2 = Player()
+        self.lastTurn = False
+        self.hasWon = ""
+        self.score = (0,0)
+        self.cardCountWinner = -1
         if toContinue != []:
             self.Player1.hand = toContinue[0]
             self.Player2.hand = toContinue[2]
@@ -44,9 +48,11 @@ class Game:
             self.Player2.turn = toContinue[3]
             self.discardCoord = toContinue[4]
             self.deck = toContinue[5]
+            self.turnCount = toContinue[6]
             print("Loaded:", toContinue)
             #and assign other shit
         else:
+            self.turnCount = 0
             self.deck = deckGo()
             self.Player1.hand, self.deck = drawfromDeck(4,self.deck)
             self.Player2.hand, self.deck = drawfromDeck(4,self.deck)
@@ -66,7 +72,10 @@ class Game:
             hand.remove(sprite2val[card])
         else:
             isWrong = True
-            penalty, Game.deck = drawfromDeck(1, Game.deck)
+            penalty, self.deck = drawfromDeck(1, self.deck)
+            if len(self.deck) == 0 or len(hand) == 5:
+                print("uh oh.")
+                self.lastTurn = True
             hand.append(penalty[0])
         self.saveProgress()
         return discardPile, hand, cardsPlayer, isWrong
@@ -86,6 +95,62 @@ class Game:
         else:
             print("Player 2 has drawn from the deck.")
             self.Player2.hasDrawn = bool
+
+    def hasBullet(self):
+        self.endTurn()
+        self.lastTurn = True
+
+    def initiateWin(self):
+        compare1 =  (sum([(x[1] + 1) % 14 for x in self.Player1.hand]), len(self.Player1.hand))
+        compare2 = (sum([(x[1] + 1) % 14 for x in self.Player2.hand]), len(self.Player2.hand))
+
+        if compare1 < compare2:
+            self.hasWon = "Player 1"
+            self.cardCountWinner = len(self.Player1.hand)
+        elif compare1 > compare2:
+            self.hasWon = "Player 2"
+            self.cardCountWinner = len(self.Player1.hand)
+        else:
+            self.hasWon = "draw"
+        self.endGame()
+
+    def endGame(self):
+        file1 = 'saveState.txt'
+        sav = open(file1, 'w+')
+        sav.close()
+
+        file2 = 'leaderboard.txt'
+        leader = open(file2, 'r')
+        l = leader.readlines()
+
+        if len(l) != 0:
+            prev = (int(l[len(l)-5][10:]), int(l[len(l)-4][10:]))
+        else:
+            prev = (0, 0)
+
+        leader = open(file2, 'a')
+
+        self.getScore()
+        leader.write("------------\n")
+        leader.write("Player 1: " + str(self.score[0] + prev[0]) + "\n")
+        leader.write("Player 2: " + str(self.score[1] + prev[1]) + "\n\n")
+        if self.hasWon != "draw":
+            s = "" if self.cardCountWinner == 1 else "s"
+            leader.write(self.hasWon + " has won with " + str(self.cardCountWinner) + " card" + s + " in hand.\n")
+        else:
+            leader.write("No one won. It was a draw.")
+
+        s, verb = ("", "has") if self.turnCount // 2 == 1 else ("s", "have")
+        leader.write(str(self.turnCount // 2) + " turn" + s + " " + verb  + " elapsed before the outcome.\n")
+
+    def getScore(self):
+        if self.hasWon == "Player 1":
+            self.score = (1,0)
+
+        elif self.hasWon == "Player 2":
+            self.score = (0,1)
+        else:
+            self.score = (0,0)
 
     def spawnSwap(self, card, discardPile, spawn, hand, sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT):
         cardpos = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
@@ -109,13 +174,21 @@ class Game:
         return discardPile, hand
 
     def endTurn(self):
-        self.Player1.turn = not self.Player1.turn
-        self.Player2.turn = not self.Player2.turn
-        if self.Player1.turn:
-            print("It's Player 1's turn now.")
+        if self.lastTurn:
+            print("It's the last turn!")
+            self.Player1.turn = False
+            self.Player2.turn = False
+            self.initiateWin()
         else:
-            print("It's Player 2's turn now.")
-        self.saveProgress()
+            self.Player1.turn = not self.Player1.turn
+            self.Player2.turn = not self.Player2.turn
+            self.turnCount += 1
+            if self.Player1.turn:
+                print("It's Player 1's turn now.")
+                self.saveProgress()
+            elif self.Player2.turn:
+                print("It's Player 2's turn now.")
+                self.saveProgress()
 
     def refreshPlayers(self, cardsPlayer1, cardsPlayer2, sprite2val1, sprite2val2, hand1, hand2, SCREEN_HEIGHT):
         cardsPlayer1, sprite2val1 = main.refreshHand(hand1, cardsPlayer1, (70, 145))
@@ -123,15 +196,11 @@ class Game:
         return cardsPlayer1, cardsPlayer2, sprite2val1, sprite2val2
 
     def getAllRelevant(self):
-        return ", ".join(str(x) for x in self.Player1.hand), str(self.Player1.turn), ", ".join(str(x) for x in self.Player2.hand), str(self.Player2.turn), str(self.discardCoord), ", ".join(str(x) for x in self.deck)
+        return "; ".join(str(x) for x in self.Player1.hand), str(self.Player1.turn), "; ".join(str(x) for x in self.Player2.hand), str(self.Player2.turn), str(self.discardCoord), "; ".join(str(x) for x in self.deck), str(self.turnCount)
 
     def saveProgress(self):
         file = 'saveState.txt'
-        if os.path.exists(file):
-            sav = open(file, 'w')
-        else:
-            sav = open(file, 'w+')
-
+        sav = open(file, 'w+')
         for x in self.getAllRelevant():
             sav.write(x + "\n")
         sav.close()
@@ -144,21 +213,18 @@ def loadProgress():
         sav = open(file, 'r')
         for line in sav:
             lines.append(line)
-        hand1, turn1, hand2, turn2, discardCoord, deck = map(lambda x: x.split("), "), lines)
-        hand1[len(hand1)-1] = hand1[len(hand1)-1][:len(hand1[len(hand1)-1])-2]
-        hand1 = [tuple([int(x[1]), int(x[4:])]) for x in hand1]
+        hand1, turn1, hand2, turn2, discardCoord, deck, turnCount = map(lambda x: x.split("; "), lines)
+        hand1 = [tuple([int(x[0]), int(x[3:4])]) for x in [hand.strip("(").strip(")") for hand in hand1]]
         turn1 = turn1[0][:len(turn1)-2]
         turn1 = turn1 == "True"
-        hand2[len(hand2)-1] = hand2[len(hand2)-1][:len(hand2[len(hand2)-1])-2]
-        hand2 = [tuple([int(x[1]), int(x[4:])]) for x in hand2]
+        hand2 = [tuple([int(x[0]), int(x[3:4])]) for x in [hand.strip("(").strip(")") for hand in hand2]]
         turn2 = turn2[0][:len(turn2)-2]
-        print(turn2)
         turn2 = turn2 == "True"
         discardCoord = discardCoord[0][:len(discardCoord[0])-2]
         discardCoord = tuple([int(discardCoord[1]), int(discardCoord[4:])])
-        deck[len(deck)-1] = deck[len(deck)-1][:len(deck[len(deck)-1])-2]
-        deck = [tuple([int(x[1]), int(x[4:])]) for x in deck[:len(deck)-2]]
-        toContinue = [hand1, turn1, hand2, turn2, discardCoord, deck]
+        deck = [tuple([int(x[0]), int(x[3:4])]) for x in [y.strip("(").strip(")") for y in deck]]
+        turnCount = int(turnCount[0])
+        toContinue = [hand1, turn1, hand2, turn2, discardCoord, deck, turnCount]
         sav.close()
     else:
         pass
