@@ -101,9 +101,10 @@ class Game:
         self.lastTurn = True
 
     def initiateWin(self):
-        compare1 =  (sum([(x[1] + 1) % 14 for x in self.Player1.hand]), len(self.Player1.hand))
-        compare2 = (sum([(x[1] + 1) % 14 for x in self.Player2.hand]), len(self.Player2.hand))
-
+        card2score = [x for x in range(1, 11)]
+        card2score.extend([11, 11, 11, 0])
+        compare1 = (sum([card2score[x[1]] for x in self.Player1.hand]), len(self.Player1.hand))
+        compare2 = (sum([card2score[x[1]] for x in self.Player2.hand]), len(self.Player2.hand))
         if compare1 < compare2:
             self.hasWon = "Player 1"
             self.cardCountWinner = len(self.Player1.hand)
