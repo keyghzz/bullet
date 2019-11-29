@@ -24,6 +24,8 @@ class Player:
         self.turn = False
         self.hasDrawn = False
         self.sprite2val = {}
+    def shuffle(self):
+        self.hand = random.shuffle(self.hand)
 
 '''
 note:
@@ -41,6 +43,7 @@ class Game:
         self.hasWon = ""
         self.score = (0,0)
         self.cardCountWinner = -1
+        self.specialTurn = False
         if toContinue != []:
             self.Player1.hand = toContinue[0]
             self.Player2.hand = toContinue[2]
@@ -111,8 +114,13 @@ class Game:
         elif compare1 > compare2:
             self.hasWon = "Player 2"
             self.cardCountWinner = len(self.Player1.hand)
-        else:
-            self.hasWon = "draw"
+        elif compare1 == compare2:
+            if self.turnCount %2 == 1:
+                self.hasWon = "Player 1"
+                self.cardCountWinner = len(self.Player1.hand)
+            elif self.turnCount %2 == 0:
+                self.hasWon = "Player 2"
+                self.cardCountWinner = len(self.Player1.hand)
         self.endGame()
 
     def endGame(self):
@@ -135,12 +143,8 @@ class Game:
         leader.write("------------\n")
         leader.write("Player 1: " + str(self.score[0] + prev[0]) + "\n")
         leader.write("Player 2: " + str(self.score[1] + prev[1]) + "\n\n")
-        if self.hasWon != "draw":
-            s = "" if self.cardCountWinner == 1 else "s"
-            leader.write(self.hasWon + " has won with " + str(self.cardCountWinner) + " card" + s + " in hand.\n")
-        else:
-            leader.write("No one won. It was a draw.")
-
+        s = "" if self.cardCountWinner == 1 else "s"
+        leader.write(self.hasWon + " has won with " + str(self.cardCountWinner) + " card" + s + " in hand.\n")
         s, verb = ("", "has") if self.turnCount // 2 == 1 else ("s", "have")
         leader.write(str(self.turnCount // 2) + " turn" + s + " " + verb  + " elapsed before the outcome.\n")
 
@@ -150,8 +154,7 @@ class Game:
 
         elif self.hasWon == "Player 2":
             self.score = (0,1)
-        else:
-            self.score = (0,0)
+
 
     def spawnSwap(self, card, discardPile, spawn, hand, sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT):
         cardpos = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
@@ -183,6 +186,8 @@ class Game:
         else:
             self.Player1.turn = not self.Player1.turn
             self.Player2.turn = not self.Player2.turn
+            self.specialTurn = False
+            self.specialMove = ""
             self.turnCount += 1
             if self.Player1.turn:
                 print("It's Player 1's turn now.")
@@ -190,6 +195,15 @@ class Game:
             elif self.Player2.turn:
                 print("It's Player 2's turn now.")
                 self.saveProgress()
+
+    def getAction(self, cardTup):
+        self.specialTurn = True
+        cardactions = {10: "See the opponent's card.",
+                       11: "Swap a card with the opponent.",
+                       12: "View your own card.",
+                       13: "Your opponent's hand is shuffled."}
+        self.specialMove = cardactions[cardTup[1]]
+        print(self.specialMove)
 
     def refreshPlayers(self, cardsPlayer1, cardsPlayer2, sprite2val1, sprite2val2, hand1, hand2, SCREEN_HEIGHT):
         cardsPlayer1, sprite2val1 = main.refreshHand(hand1, cardsPlayer1, (70, 145))
@@ -206,6 +220,9 @@ class Game:
             sav.write(x + "\n")
         sav.close()
 
+def isSpecial(cardval):
+    return cardval[1] > 9
+
 def loadProgress():
     file = 'saveState.txt'
     toContinue = []
@@ -215,15 +232,15 @@ def loadProgress():
         for line in sav:
             lines.append(line)
         hand1, turn1, hand2, turn2, discardCoord, deck, turnCount = map(lambda x: x.split("; "), lines)
-        hand1 = [tuple([int(x[0]), int(x[3:4])]) for x in [hand.strip("(").strip(")") for hand in hand1]]
+        hand1 = [tuple([int(x[0]), int(x[3:])]) for x in [hand.strip("\n").strip("(").strip(")") for hand in hand1]]
         turn1 = turn1[0][:len(turn1)-2]
         turn1 = turn1 == "True"
-        hand2 = [tuple([int(x[0]), int(x[3:4])]) for x in [hand.strip("(").strip(")") for hand in hand2]]
+        hand2 = [tuple([int(x[0]), int(x[3:])]) for x in [hand.strip("\n").strip("(").strip(")") for hand in hand2]]
         turn2 = turn2[0][:len(turn2)-2]
         turn2 = turn2 == "True"
         discardCoord = discardCoord[0][:len(discardCoord[0])-2]
         discardCoord = tuple([int(discardCoord[1]), int(discardCoord[4:])])
-        deck = [tuple([int(x[0]), int(x[3:4])]) for x in [y.strip("(").strip(")") for y in deck]]
+        deck = [tuple([int(x[0]), int(x[3:])]) for x in [y.strip("\n").strip("(").strip(")") for y in deck]]
         turnCount = int(turnCount[0])
         toContinue = [hand1, turn1, hand2, turn2, discardCoord, deck, turnCount]
         sav.close()

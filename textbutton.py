@@ -17,7 +17,7 @@ class TextButton:
                  highlight_color=arcade.color.AMAZON,
                  shadow_color=arcade.color.AMAZON,
                  button_height=2):
-        self.center_x = SCREEN_WIDTH//2
+        self.center_x = SCREEN_WIDTH//2 + 150
         self.center_y = center_y
         self.width = width
         self.height = height
@@ -139,7 +139,7 @@ def check_mouse_hovering_for_buttons(x, y, button_list):
 
 class StartTextButton(TextButton):
     def __init__(self, center_x, center_y, action_function):
-        super().__init__(center_x, (SCREEN_HEIGHT//2 + 105), 350, 65, "Start New Game", 35, "resources/FSEX302.ttf")
+        super().__init__(center_x, (SCREEN_HEIGHT//2 + 30), 400, 70, "Start New Game", 40, "resources/FSEX302.ttf")
         self.action_function = action_function
 
     def on_release(self):
@@ -149,7 +149,7 @@ class StartTextButton(TextButton):
 
 class ContinueTextButton(TextButton):
     def __init__(self, center_x, center_y, action_function):
-        super().__init__(center_x, (SCREEN_HEIGHT//2 + 35), 350, 65, "Continue", 35, "resources/FSEX302.ttf")
+        super().__init__(center_x, (SCREEN_HEIGHT//2 - 50), 400, 70, "Continue", 40, "resources/FSEX302.ttf")
         self.action_function = action_function
 
     def on_release(self):
@@ -158,7 +158,7 @@ class ContinueTextButton(TextButton):
 
 class InstructionsTextButton(TextButton):
     def __init__(self, center_x, center_y, action_function):
-        super().__init__(center_x, (SCREEN_HEIGHT//2 - 35), 350, 65, "Instructions", 35, "resources/FSEX302.ttf")
+        super().__init__(center_x, (SCREEN_HEIGHT//2 - 130), 400, 70, "Instructions", 40, "resources/FSEX302.ttf")
         self.action_function = action_function
 
     def on_release(self):
@@ -167,7 +167,7 @@ class InstructionsTextButton(TextButton):
 
 class LeaderboardTextButton(TextButton):
     def __init__(self, center_x, center_y, action_function):
-        super().__init__(center_x, (SCREEN_HEIGHT//2 - 105), 350, 65, "Leaderboard", 35, "resources/FSEX302.ttf")
+        super().__init__(center_x, (SCREEN_HEIGHT//2 - 210), 400, 70, "Leaderboard", 40, "resources/FSEX302.ttf")
         self.action_function = action_function
 
     def on_release(self):
