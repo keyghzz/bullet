@@ -1,5 +1,5 @@
 import random
-import main
+import interface
 import os
 
 def deckGo():
@@ -69,7 +69,7 @@ class Game:
         if (sprite2val[card])[1] == self.discardCoord[1]:
             isWrong = False
             cardpos = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
-            discardPile.append(main.val2sprite(sprite2val[card], cardpos))
+            discardPile.append(interface.val2sprite(sprite2val[card], cardpos))
             self.discardCoord = sprite2val[card]
             cardsPlayer.remove(card)
             hand.remove(sprite2val[card])
@@ -160,7 +160,7 @@ class Game:
 
     def spawnSwap(self, card, discardPile, spawn, hand, sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT):
         cardpos = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
-        discardPile.append(main.val2sprite(sprite2val[card], cardpos))
+        discardPile.append(interface.val2sprite(sprite2val[card], cardpos))
         iOfC = hand.index(sprite2val[card])
         self.discardCoord = sprite2val[card]
         hand.remove(sprite2val[card])
@@ -172,7 +172,7 @@ class Game:
     def discardSwap(self, card, discardPile, hand, sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT):
         cardpos = (SCREEN_WIDTH//2+(264), SCREEN_HEIGHT//2)
         discardPile.pop()
-        discardPile.append(main.val2sprite(sprite2val[card], cardpos))
+        discardPile.append(interface.val2sprite(sprite2val[card], cardpos))
         iOfC = hand.index(sprite2val[card])
         hand.remove(sprite2val[card])
         hand.insert(iOfC, self.discardCoord)
@@ -208,8 +208,8 @@ class Game:
         print(self.specialMove)
 
     def refreshPlayers(self, cardsPlayer1, cardsPlayer2, sprite2val1, sprite2val2, hand1, hand2, SCREEN_HEIGHT):
-        cardsPlayer1, sprite2val1 = main.refreshHand(hand1, cardsPlayer1, (70, 145))
-        cardsPlayer2, sprite2val2 = main.refreshHand(hand2, cardsPlayer2, (70, SCREEN_HEIGHT-(145)))
+        cardsPlayer1, sprite2val1 = interface.refreshHand(hand1, cardsPlayer1, (70, 145))
+        cardsPlayer2, sprite2val2 = interface.refreshHand(hand2, cardsPlayer2, (70, SCREEN_HEIGHT-(145)))
         return cardsPlayer1, cardsPlayer2, sprite2val1, sprite2val2
 
     def getAllRelevant(self):
