@@ -25,7 +25,7 @@ class Player:
         self.hasDrawn = False
         self.sprite2val = {}
     def shuffle(self):
-        self.hand = random.shuffle(self.hand)
+        random.shuffle(self.hand)
 
 '''
 note:
@@ -92,12 +92,14 @@ class Game:
         return discardPile, spawn
 
     def hasDrawn(self, bool):
-        if self.Player1.turn == True:
+        if self.Player1.turn == True and bool:
             print("Player 1 has drawn from the deck.")
             self.Player1.hasDrawn = bool
-        else:
+        elif self.Player2.turn == True and bool:
             print("Player 2 has drawn from the deck.")
             self.Player2.hasDrawn = bool
+        else:
+            pass
 
     def hasBullet(self):
         self.endTurn()
@@ -231,19 +233,20 @@ def loadProgress():
         sav = open(file, 'r')
         for line in sav:
             lines.append(line)
-        hand1, turn1, hand2, turn2, discardCoord, deck, turnCount = map(lambda x: x.split("; "), lines)
-        hand1 = [tuple([int(x[0]), int(x[3:])]) for x in [hand.strip("\n").strip("(").strip(")") for hand in hand1]]
-        turn1 = turn1[0][:len(turn1)-2]
-        turn1 = turn1 == "True"
-        hand2 = [tuple([int(x[0]), int(x[3:])]) for x in [hand.strip("\n").strip("(").strip(")") for hand in hand2]]
-        turn2 = turn2[0][:len(turn2)-2]
-        turn2 = turn2 == "True"
-        discardCoord = discardCoord[0][:len(discardCoord[0])-2]
-        discardCoord = tuple([int(discardCoord[1]), int(discardCoord[4:])])
-        deck = [tuple([int(x[0]), int(x[3:])]) for x in [y.strip("\n").strip("(").strip(")") for y in deck]]
-        turnCount = int(turnCount[0])
-        toContinue = [hand1, turn1, hand2, turn2, discardCoord, deck, turnCount]
-        sav.close()
+        if len(lines) != 0:
+            hand1, turn1, hand2, turn2, discardCoord, deck, turnCount = map(lambda x: x.split("; "), lines)
+            hand1 = [tuple([int(x[0]), int(x[3:])]) for x in [hand.strip("\n").strip("(").strip(")") for hand in hand1]]
+            turn1 = turn1[0][:len(turn1)-2]
+            turn1 = turn1 == "True"
+            hand2 = [tuple([int(x[0]), int(x[3:])]) for x in [hand.strip("\n").strip("(").strip(")") for hand in hand2]]
+            turn2 = turn2[0][:len(turn2)-2]
+            turn2 = turn2 == "True"
+            discardCoord = discardCoord[0][:len(discardCoord[0])-2]
+            discardCoord = tuple([int(discardCoord[1]), int(discardCoord[4:])])
+            deck = [tuple([int(x[0]), int(x[3:])]) for x in [y.strip("\n").strip("(").strip(")") for y in deck]]
+            turnCount = int(turnCount[0])
+            toContinue = [hand1, turn1, hand2, turn2, discardCoord, deck, turnCount]
+            sav.close()
     else:
         pass
     return toContinue

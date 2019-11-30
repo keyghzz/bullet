@@ -219,11 +219,14 @@ class DigitalBullet(arcade.Window):
             bulletClick = arcade.get_sprites_at_point((x,y), self.bulletList)
 
             if (len(toDrag) > 0):
-                if engine.Game.specialTurn:
-                    if len(self.spawn) != 0 and toDrag[0] == self.spawn[0] and engine.Game.specialMove != "Swap a card with the opponent.":
-                        self.sino_hatak = None
-                    else:
+                if engine.Game.specialTurn and engine.Game.specialMove != "Swap a card with the opponent.":
+                    if toDrag[0] == self.spawn[0]:
                         self.sino_hatak = toDrag[0]
+                    else:
+                        self.sino_hatak = None
+                else:
+                    self.sino_hatak = toDrag[0]
+
                 self.last_mouse_position = x, y
             elif len(deckClick) > 0 and len(self.spawn) == 0 and len(engine.Game.deck) != 0:
                 print("Deck clicked.")
@@ -257,16 +260,12 @@ class DigitalBullet(arcade.Window):
                             show = arcade.Sprite((engine.getimgStr(engine.Game.Player1.sprite2val[own[0]])), 0.9)
                             show.position = own[0].position
                             self.cardsPlayer1.append(show)
-                            engine.Game.specialTurn = False
-                            engine.Game.specialMove = ""
                     elif engine.Game.Player2.turn:
                         own = arcade.get_sprites_at_point((x,y), self.cardsPlayer2)
                         if len(own) != 0:
                             show = arcade.Sprite((engine.getimgStr(engine.Game.Player2.sprite2val[own[0]])), 0.9)
                             show.position = own[0].position
                             self.cardsPlayer2.append(show)
-                            engine.Game.specialTurn = False
-                            engine.Game.specialMove = ""
                 elif engine.Game.specialMove == "See the opponent's card.":
                     if engine.Game.Player1.turn:
                         own = arcade.get_sprites_at_point((x,y), self.cardsPlayer2)
@@ -274,25 +273,17 @@ class DigitalBullet(arcade.Window):
                             show = arcade.Sprite((engine.getimgStr(engine.Game.Player2.sprite2val[own[0]])), 0.9)
                             show.position = own[0].position
                             self.cardsPlayer2.append(show)
-                            engine.Game.specialTurn = False
-                            engine.Game.specialMove = ""
                     elif engine.Game.Player2.turn:
                         own = arcade.get_sprites_at_point((x,y), self.cardsPlayer1)
                         if len(own) != 0:
                             show = arcade.Sprite((engine.getimgStr(engine.Game.Player1.sprite2val[own[0]])), 0.9)
                             show.position = own[0].position
                             self.cardsPlayer1.append(show)
-                            engine.Game.specialTurn = False
-                            engine.Game.specialMove = ""
                 elif engine.Game.specialMove == "Your opponent's hand is shuffled.":
                     if engine.Game.Player1.turn:
                         engine.Game.Player2.shuffle()
-                        engine.Game.specialTurn = False
-                        engine.Game.specialMove = ""
                     elif engine.Game.Player2.turn:
                         engine.Game.Player1.shuffle()
-                        engine.Game.specialTurn = False
-                        engine.Game.specialMove = ""
                 else:
                     pass
 
@@ -331,6 +322,66 @@ class DigitalBullet(arcade.Window):
             if isWrong:
                 arcade.play_sound(self.wrong_sound)
 
+        if engine.Game.specialTurn and engine.Game.specialMove == "Swap a card with the opponent.":
+            if hatak_last != None:
+                swap1 = arcade.check_for_collision_with_list(hatak_last, self.cardsPlayer1)
+                swap2 = arcade.check_for_collision_with_list(hatak_last, self.cardsPlayer2)
+            else:
+                swap1 = []
+                swap2 = []
+            print(swap1, swap2)
+
+            print(engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val)
+            if len(swap2) != 0:
+                swapval1 = engine.Game.Player1.sprite2val[hatak_last]
+                swapval2 = engine.Game.Player2.sprite2val[swap2[0]]
+                index1 = engine.Game.Player1.hand.index(swapval1)
+                index2 = engine.Game.Player2.hand.index(swapval2)
+                engine.Game.Player1.hand.remove(swapval1)
+                engine.Game.Player2.hand.remove(swapval2)
+                engine.Game.Player1.hand.insert(index1, swapval2)
+                engine.Game.Player2.hand.insert(index2, swapval1)
+                engine.Game.specialMove = ""
+                arcade.play_sound(self.swap_sound)
+            elif len(swap1) != 0:
+                swapval1 = engine.Game.Player1.sprite2val[swap1[0]]
+                swapval2 = engine.Game.Player2.sprite2val[hatak_last]
+                index1 = engine.Game.Player1.hand.index(swapval1)
+                index2 = engine.Game.Player2.hand.index(swapval2)
+                engine.Game.Player1.hand.remove(swapval1)
+                engine.Game.Player2.hand.remove(swapval2)
+                engine.Game.Player1.hand.insert(index1, swapval2)
+                engine.Game.Player2.hand.insert(index2, swapval1)
+                engine.Game.specialMove = ""
+                arcade.play_sound(self.swap_sound)
+
+        if len(self.discardPile) > 0:
+            p1DiscardSwap = arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer1)
+            p2DiscardSwap = arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer2)
+
+            if p1DiscardSwap != [] and engine.Game.Player1.turn == True and engine.Game.Player1.hasDrawn == False:
+                print("Player 1 discard swapped.")
+                self.discardPile, engine.Game.Player1.hand = engine.Game.discardSwap(p1DiscardSwap[0], self.discardPile,
+                engine.Game.Player1.hand, engine.Game.Player1.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
+                engine.Game.endTurn()
+                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,
+                self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+                arcade.play_sound(self.swap_sound)
+
+            elif p2DiscardSwap != [] and engine.Game.Player2.turn == True and engine.Game.Player2.hasDrawn == False:
+                print("Player 2 discard swapped.")
+                self.discardPile, engine.Game.Player2.hand = engine.Game.discardSwap(p2DiscardSwap[0], self.discardPile,
+                engine.Game.Player2.hand, engine.Game.Player2.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
+                engine.Game.endTurn()
+                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,
+                self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+                arcade.play_sound(self.swap_sound)
+
+            else:
+                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,
+                self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
+                self.discardPile[len(self.discardPile)-1].position = (SCREEN_WIDTH//2+264,SCREEN_HEIGHT//2)
+
         dispose = arcade.check_for_collision_with_list(self.playArea, self.spawn)
         if dispose != []:
             print("Spawn was disposed.")
@@ -368,70 +419,6 @@ class DigitalBullet(arcade.Window):
                 self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,
                 self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
                 self.spawn[0].position = (SCREEN_WIDTH//2,SCREEN_HEIGHT//2)
-
-        if len(self.discardPile) > 0:
-            p1DiscardSwap = arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer1)
-            p2DiscardSwap = arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer2)
-
-            if p1DiscardSwap != [] and engine.Game.Player1.turn == True and engine.Game.Player1.hasDrawn == False:
-                print("Player 1 discard swapped.")
-                self.discardPile, engine.Game.Player1.hand = engine.Game.discardSwap(p1DiscardSwap[0], self.discardPile,
-                engine.Game.Player1.hand, engine.Game.Player1.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
-                engine.Game.endTurn()
-                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,
-                self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
-                arcade.play_sound(self.swap_sound)
-
-            elif p2DiscardSwap != [] and engine.Game.Player2.turn == True and engine.Game.Player2.hasDrawn == False:
-                print("Player 2 discard swapped.")
-                self.discardPile, engine.Game.Player2.hand = engine.Game.discardSwap(p2DiscardSwap[0], self.discardPile,
-                engine.Game.Player2.hand, engine.Game.Player2.sprite2val, SCREEN_WIDTH, SCREEN_HEIGHT)
-                engine.Game.endTurn()
-                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,
-                self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
-                arcade.play_sound(self.swap_sound)
-
-            else:
-                self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,
-                self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
-                self.discardPile[len(self.discardPile)-1].position = (SCREEN_WIDTH//2+264,SCREEN_HEIGHT//2)
-
-        if engine.Game.specialTurn and engine.Game.specialMove == "Swap a card with the opponent.":
-            if hatak_last != None:
-                swap1 = arcade.check_for_collision_with_list(hatak_last, self.cardsPlayer1)
-                swap2 = arcade.check_for_collision_with_list(hatak_last, self.cardsPlayer2)
-            else:
-                swap1 = []
-                swap2 = []
-            print(swap1, swap2)
-
-            print(engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val)
-            if len(swap2) != 0:
-                swapval1 = engine.Game.Player1.sprite2val[hatak_last]
-                swapval2 = engine.Game.Player2.sprite2val[swap2[0]]
-                index1 = engine.Game.Player1.hand.index(swapval1)
-                index2 = engine.Game.Player2.hand.index(swapval2)
-                engine.Game.Player1.hand.remove(swap2val1)
-                engine.Game.Player2.hand.remove(swap2val2)
-                engine.Game.Player1.hand.insert(index1, swap2val2)
-                engine.Game.Player2.hand.insert(index2, swap2val1)
-                engine.Game.specialTurn = False
-                engine.Game.specialMove = ""
-                engine.Game.endTurn()
-                arcade.play_sound(self.swap_sound)
-            elif len(swap1) != 0:
-                swapval1 = engine.Game.Player1.sprite2val[swap1[0]]
-                swapval2 = engine.Game.Player2.sprite2val[hatak_last]
-                index1 = engine.Game.Player1.hand.index(swapval1)
-                index2 = engine.Game.Player2.hand.index(swapval2)
-                engine.Game.Player1.hand.remove(swap2val1)
-                engine.Game.Player2.hand.remove(swap2val2)
-                engine.Game.Player1.hand.insert(index1, swap2val2)
-                engine.Game.Player2.hand.insert(index2, swap2val1)
-                engine.Game.specialTurn = False
-                engine.Game.specialMove = ""
-                engine.Game.endTurn()
-                arcade.play_sound(self.swap_sound)
 
 def refreshHand(hand, spriteList, tup):
     spriteList = arcade.SpriteList()
