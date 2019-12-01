@@ -529,7 +529,7 @@ class DigitalBullet(arcade.Window):
                 engine.Game.Player2.hand.insert(index2, swapval1)
                 engine.Game.specialMove = ""
                 arcade.play_sound(self.swap_sound)
-            elif len(swap1) != 0 and engine.Game.Player1.turn:
+            elif len(swap1) != 0 and engine.Game.Player2.turn:
                 swapval1 = engine.Game.Player1.sprite2val[swap1[0]]
                 swapval2 = engine.Game.Player2.sprite2val[hatak_last]
                 index1 = engine.Game.Player1.hand.index(swapval1)
