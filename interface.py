@@ -1,6 +1,7 @@
 import arcade
 import engine
 import textbutton
+import os
 
 # specifies window dimensions; cuurently only supports 1600 x 800 for title screen
 SCREEN_WIDTH = 1600
@@ -40,9 +41,13 @@ class DigitalBullet(arcade.Window):
         # booleans for screen display
         self.playScreen = True
         self.requestInstructions = False
+        self.requestLeaderboard = False
 
         # texture for background
         self.background = None
+
+        # sprite for leaderboard
+        self.leaderboard = None
 
     def setup(self):
         '''
@@ -66,6 +71,11 @@ class DigitalBullet(arcade.Window):
 
         # background image of loading screen
         self.background = arcade.load_texture("resources/BulletTitleScreen.png")
+
+        # creates the leaderboard sprite
+        self.leaderboard = arcade.Sprite("resources/leaderboard.png", 0.3)
+        self.leaderboard.center_x = (SCREEN_WIDTH//2)
+        self.leaderboard.center_y = (SCREEN_HEIGHT//2)
 
         # SpriteList objects for players' cards
         self.cardsPlayer1 = arcade.SpriteList()
@@ -155,6 +165,7 @@ class DigitalBullet(arcade.Window):
         This function is called when the leaderboard button is pressed.
         It displays the leaderboard.
         '''
+        self.requestLeaderboard = True
         print("Leaderboard Displayed")
 
     def on_draw(self):
@@ -210,6 +221,11 @@ class DigitalBullet(arcade.Window):
             self.cardsPlayer2.draw()
             self.spawn.draw()
 
+        # This draws the instructions page only once it is initiated.
+        elif self.requestInstructions:
+            for button in self.button_list_instructions:
+                button.draw()
+
         # This draws play screen elements only if the game hasn't started.
         elif self.playScreen:
             arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2,
@@ -217,10 +233,32 @@ class DigitalBullet(arcade.Window):
             for button in self.button_list_loadingScreen:
                 button.draw()
 
-        # This draws the instructions page only once it is initiated.
-        elif self.requestInstructions:
-            for button in self.button_list_instructions:
-                button.draw()
+            if self.requestLeaderboard:
+                self.leaderboard.draw()
+                # This loads the leaderboard from the text file.
+                file = 'leaderboard.txt'
+                if os.path.exists(file):
+                    f = open(file, "r")
+                    wincount = f.readlines()
+                    p1wins = wincount[1]
+                    p2wins = wincount[2]
+
+                    arcade.draw_text(p1wins,
+                    SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(30), arcade.color.WHITE, 50,
+                    anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
+                    arcade.draw_text(p2wins,
+                    SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(120), arcade.color.WHITE, 50,
+                    anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
+                else:
+                    arcade.draw_text("Player 1: 0",
+                    SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(30), arcade.color.WHITE, 50,
+                    anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
+                    arcade.draw_text("Player 2: 0",
+                    SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(120), arcade.color.WHITE, 50,
+                    anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
+
+        else:
+            pass
 
     def on_update(self, delta_time):
         '''
@@ -384,15 +422,18 @@ class DigitalBullet(arcade.Window):
            - special card abilities,
            - and turns.
         """
-
+        hatak_last = self.sino_hatak
+        if self.requestLeaderboard:
+            clicked = arcade.MOUSE_BUTTON_LEFT
+            if clicked > 0:
+                self.requestLeaderboard = False
         # This checks for loading screen button clicks while the loading screen is open.
-        if self.playScreen:
+        elif self.playScreen:
             textbutton.check_mouse_release_for_buttons(x, y, self.button_list_loadingScreen)
             textbutton.check_mouse_release_for_buttons(x, y, self.button_list_instructions)
 
         # This releases the card being dragged at mouse release.
-        hatak_last = self.sino_hatak
-        if button == arcade.MOUSE_BUTTON_LEFT:
+        elif button == arcade.MOUSE_BUTTON_LEFT:
             self.sino_hatak = None
 
         '''
@@ -422,7 +463,10 @@ class DigitalBullet(arcade.Window):
             arcade.play_sound(self.place_sound)
             if isWrong:
                 arcade.play_sound(self.wrong_sound)
-
+        '''
+        This checks whether a special turn is initiated.
+        If the special ability is swap, check for hand collisions with the last card dragged.
+        '''
         if engine.Game.specialTurn and engine.Game.specialMove == "Swap a card with the opponent.":
             if hatak_last != None:
                 swap1 = arcade.check_for_collision_with_list(hatak_last, self.cardsPlayer1)
@@ -431,7 +475,7 @@ class DigitalBullet(arcade.Window):
                 swap1 = []
                 swap2 = []
 
-            if len(swap2) != 0:
+            if len(swap2) != 0 and engine.Game.Player1.turn:
                 swapval1 = engine.Game.Player1.sprite2val[hatak_last]
                 swapval2 = engine.Game.Player2.sprite2val[swap2[0]]
                 index1 = engine.Game.Player1.hand.index(swapval1)
@@ -442,7 +486,7 @@ class DigitalBullet(arcade.Window):
                 engine.Game.Player2.hand.insert(index2, swapval1)
                 engine.Game.specialMove = ""
                 arcade.play_sound(self.swap_sound)
-            elif len(swap1) != 0:
+            elif len(swap1) != 0 and engine.Game.Player1.turn:
                 swapval1 = engine.Game.Player1.sprite2val[swap1[0]]
                 swapval2 = engine.Game.Player2.sprite2val[hatak_last]
                 index1 = engine.Game.Player1.hand.index(swapval1)
@@ -453,7 +497,10 @@ class DigitalBullet(arcade.Window):
                 engine.Game.Player2.hand.insert(index2, swapval1)
                 engine.Game.specialMove = ""
                 arcade.play_sound(self.swap_sound)
-
+        '''
+        If the discard pile is dragged, check for collisions with the players' hand.
+        Swap the cards upon contact with the discard pile.
+        '''
         if len(self.discardPile) > 0:
             p1DiscardSwap = arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer1)
             p2DiscardSwap = arcade.check_for_collision_with_list(self.discardPile[len(self.discardPile)-1], self.cardsPlayer2)
@@ -476,11 +523,14 @@ class DigitalBullet(arcade.Window):
                 self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
                 arcade.play_sound(self.swap_sound)
 
+            # This allows for the snapping of the cards when there is a discard card but no action is done.
+            # This is performed regularly since there is always a card at discard.
             else:
                 self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,
                 self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
                 self.discardPile[len(self.discardPile)-1].position = (SCREEN_WIDTH//2+264,SCREEN_HEIGHT//2)
 
+        #If the spawn card is dragged to the play area, the card is disposed.
         dispose = arcade.check_for_collision_with_list(self.playArea, self.spawn)
         if dispose != []:
             print("Spawn was disposed.")
@@ -490,6 +540,7 @@ class DigitalBullet(arcade.Window):
             self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
             arcade.play_sound(self.place_sound)
 
+        # If the spawn card is dragged to the players' hands, swap the spawn card with the card of the hand it was swapped to.
         if len(self.spawn) > 0:
             p1SpawnSwap = arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer1)
             p2SpawnSwap = arcade.check_for_collision_with_list(self.spawn[0], self.cardsPlayer2)
@@ -514,12 +565,18 @@ class DigitalBullet(arcade.Window):
                 self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
                 arcade.play_sound(self.swap_sound)
 
+            # Similarly, this allows for the snapping of the cards when there is a spawn card but no action is done.
             else:
                 self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,
                 self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
                 self.spawn[0].position = (SCREEN_WIDTH//2,SCREEN_HEIGHT//2)
 
 def refreshHand(hand, spriteList, tup):
+    """
+    This allows for the redrawing of the card when:
+      - no action is done or
+      - an action that changes the hand is done.
+    """
     spriteList = arcade.SpriteList()
     sprite2val = {}
     if len(hand) != 0:
@@ -533,12 +590,19 @@ def refreshHand(hand, spriteList, tup):
     return spriteList, sprite2val
 
 def val2sprite(val, spritepos):
+    """
+    This creates a sprite for the image of the card when it is viewed
+    by the special ability.
+    """
     new = arcade.Sprite(engine.getimgStr(val), 0.9)
     new.position = spritepos
     return new
 
 def main():
-    """ Main method """
+    """
+    This runs whenever the file is run in itself.
+    The DigitalBullet is created for the main game.
+    """
     laro = DigitalBullet(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     laro.setup()
     arcade.run()
