@@ -238,38 +238,38 @@ class DigitalBullet(arcade.Window):
             self.spawn.draw()
 
         # This draws play screen elements only if the game hasn't started.
-        elif self.playScreen:
+        elif self.playScreen and not self.requestLeaderboard and not self.requestInstructions:
             arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2,
                                   1600, 800, self.background)
             for button in self.button_list_loadingScreen:
                 button.draw()
 
-            if self.requestLeaderboard:
-                self.leaderboard.draw()
-                # This loads the leaderboard from the text file.
-                file = 'leaderboard.txt'
-                if os.path.exists(file):
-                    f = open(file, "r")
-                    wincount = f.readlines()
-                    p1wins = wincount[1]
-                    p2wins = wincount[2]
+        elif self.requestLeaderboard:
+            self.leaderboard.draw()
+            # This loads the leaderboard from the text file.
+            file = 'leaderboard.txt'
+            if os.path.exists(file):
+                f = open(file, "r")
+                wincount = f.readlines()
+                p1wins = wincount[1]
+                p2wins = wincount[2]
 
-                    arcade.draw_text(p1wins,
-                    SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(30), arcade.color.WHITE, 50,
-                    anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
-                    arcade.draw_text(p2wins,
-                    SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(120), arcade.color.WHITE, 50,
-                    anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
-                else:
-                    arcade.draw_text("Player 1: 0",
-                    SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(30), arcade.color.WHITE, 50,
-                    anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
-                    arcade.draw_text("Player 2: 0",
-                    SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(120), arcade.color.WHITE, 50,
-                    anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
+                arcade.draw_text(p1wins,
+                SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(30), arcade.color.WHITE, 50,
+                anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
+                arcade.draw_text(p2wins,
+                SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(120), arcade.color.WHITE, 50,
+                anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
+            else:
+                arcade.draw_text("Player 1: 0",
+                SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(30), arcade.color.WHITE, 50,
+                anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
+                arcade.draw_text("Player 2: 0",
+                SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(120), arcade.color.WHITE, 50,
+                anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
 
-            elif self.requestInstructions:
-                self.toDrawI.draw()
+        elif self.requestInstructions:
+            self.toDrawI.draw()
 
         else:
             pass
@@ -456,6 +456,12 @@ class DigitalBullet(arcade.Window):
            - and turns.
         """
         hatak_last = self.sino_hatak
+
+        # This checks for loading screen button clicks while the loading screen is open.
+        if self.playScreen and not self.requestLeaderboard and not self.requestInstructions:
+            textbutton.check_mouse_release_for_buttons(x, y, self.button_list_loadingScreen)
+            textbutton.check_mouse_release_for_buttons(x, y, self.button_list_instructions)
+
         # This function allows the leaderboard to vanish after click.
         if self.requestLeaderboard:
             clicked = arcade.MOUSE_BUTTON_LEFT
@@ -468,10 +474,6 @@ class DigitalBullet(arcade.Window):
                 self.toDrawI = self.instructionsList.pop()
             else:
                 self.requestInstructions = False
-        # This checks for loading screen button clicks while the loading screen is open.
-        elif self.playScreen:
-            textbutton.check_mouse_release_for_buttons(x, y, self.button_list_loadingScreen)
-            textbutton.check_mouse_release_for_buttons(x, y, self.button_list_instructions)
 
         # This releases the card being dragged at mouse release.
         elif button == arcade.MOUSE_BUTTON_LEFT:

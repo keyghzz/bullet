@@ -237,7 +237,7 @@ class Game:
         else:
             prev = (0, 0)
 
-        leader = open(file2, 'a')
+        leader = open(file2, 'w')
 
         self.getScore()
         leader.write("------------\n")
