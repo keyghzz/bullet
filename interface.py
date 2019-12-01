@@ -638,15 +638,3 @@ def val2sprite(val, spritepos):
     new = arcade.Sprite(engine.getimgStr(val), 0.9)
     new.position = spritepos
     return new
-
-def main():
-    """
-    This runs whenever the file is run in itself.
-    The DigitalBullet is created for the main game.
-    """
-    laro = DigitalBullet(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    laro.setup()
-    arcade.run()
-
-if __name__ == "__main__":
-    main()
