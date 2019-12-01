@@ -312,7 +312,7 @@ class DigitalBullet(arcade.Window):
     def on_mouse_press(self, x, y, button, key_modifiers):
 
         # This checks if the following buttons are pressed.
-        if self.playScreen:
+        if self.playScreen and not self.requestLeaderboard and not self.requestInstructions:
             textbutton.check_mouse_press_for_buttons(x, y, self.button_list_loadingScreen)
             textbutton.check_mouse_press_for_buttons(x, y, self.button_list_instructions)
 
