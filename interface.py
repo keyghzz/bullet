@@ -46,8 +46,9 @@ class DigitalBullet(arcade.Window):
         # texture for background
         self.background = None
 
-        # sprite for leaderboard
+        # sprite for leaderboard and instructions
         self.leaderboard = None
+        self.toDrawI = None
 
     def setup(self):
         '''
@@ -112,6 +113,8 @@ class DigitalBullet(arcade.Window):
         self.bulletList.append(bullet1)
         self.bulletList.append(bullet2)
 
+        self.instructionsList = []
+
     def bootStart(self):
         '''
         This function sets up the game-specific variables such as the players' hands
@@ -139,7 +142,8 @@ class DigitalBullet(arcade.Window):
 
         # creates the engine.Game variable of the class Game to initate play
         engine.Game = engine.Game([]) # the "[]" indicates that there is no variable to load
-        self.bootStart() # initializes the game display
+        # initializes the game display on start up
+        self.bootStart()
 
     def continue_program(self):
         '''
@@ -156,9 +160,17 @@ class DigitalBullet(arcade.Window):
     def display_instructions(self):
         '''
         This function is called when the instructions button is pressed.
-        It displays the instructions.
+        It displays the instructions by creating a list of sprites upon each click.
+        Every succeeding click iterates over the list until it is empty.
         '''
-        print("Insert Instructions Here")
+        self.requestInstructions = True
+        for x in range(1,8):
+            tempI = arcade.Sprite("resources/INSTRUCTIONS" + str(x) + ".png")
+            tempI.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
+            self.instructionsList.append(tempI)
+        self.instructionsList.reverse()
+        self.toDrawI = self.instructionsList.pop()
+        print("The instructions have been displayed.")
 
     def display_leaderboard(self):
         '''
@@ -166,7 +178,7 @@ class DigitalBullet(arcade.Window):
         It displays the leaderboard.
         '''
         self.requestLeaderboard = True
-        print("Leaderboard Displayed")
+        print("The leaderboard has been displayed.")
 
     def on_draw(self):
         '''
@@ -177,15 +189,19 @@ class DigitalBullet(arcade.Window):
         arcade.start_render()
 
         # This draws game-specific elements on the screen only if the game has started.
-        if not self.playScreen and not self.requestInstructions:
-            # This draws turn labels for the players.
+        if not self.playScreen:
+            # This draws turn and action labels for the players.
+            if not engine.Game.specialTurn:
+                label = "YOUR TURN"
+            else:
+                label = engine.Game.specialMove.upper()
             if engine.Game.Player1.turn:
-                arcade.draw_text("YOUR TURN",
-                            SCREEN_WIDTH//2, 275, arcade.color.WHITE, 50, width=500, align="center",
+                arcade.draw_text(label,
+                            SCREEN_WIDTH//2, 275, arcade.color.WHITE, 40, width=1000, align="center",
                             anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf")
             elif engine.Game.Player2.turn:
-                arcade.draw_text("YOUR TURN",
-                            SCREEN_WIDTH//2, 525, arcade.color.WHITE, 50, width=500, align="center",
+                arcade.draw_text(label,
+                            SCREEN_WIDTH//2, 525, arcade.color.WHITE, 40, width=1000, align="center",
                             anchor_x="center", anchor_y="center", font_name = "resources/FSEX302.ttf", rotation = 180.0)
 
             # Since both players' turns are set to False upon win, this function indicates win only if a player has won.
@@ -221,11 +237,6 @@ class DigitalBullet(arcade.Window):
             self.cardsPlayer2.draw()
             self.spawn.draw()
 
-        # This draws the instructions page only once it is initiated.
-        elif self.requestInstructions:
-            for button in self.button_list_instructions:
-                button.draw()
-
         # This draws play screen elements only if the game hasn't started.
         elif self.playScreen:
             arcade.draw_texture_rectangle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2,
@@ -256,6 +267,9 @@ class DigitalBullet(arcade.Window):
                     arcade.draw_text("Player 2: 0",
                     SCREEN_WIDTH//2, SCREEN_HEIGHT//2-(120), arcade.color.WHITE, 50,
                     anchor_x="center", anchor_y="center", font_name="resources/FSEX302.ttf")
+
+            elif self.requestInstructions:
+                self.toDrawI.draw()
 
         else:
             pass
@@ -317,11 +331,11 @@ class DigitalBullet(arcade.Window):
 
             # This specifies the objects to drag. If the list of objects to be dragged is not empty, the first element is recorded.
             # Since the lists are mutually exclusive, and only one action can be done at a time,
-            if (len(toDrag) > 0):
+            if (len(toDrag) > 0) and engine.Game.turnCount > 1:
                 # If the player has drawn a special turn that does not involve card swapping, card dragging is not allowed unless it is the spawn card.
                 # Else, cards may be dragged.
                 if engine.Game.specialTurn and engine.Game.specialMove != "Swap a card with the opponent.":
-                    if toDrag[0] == self.spawn[0]:
+                    if len(self.spawn) != 0 and toDrag[0] == self.spawn[0]:
                         self.sino_hatak = toDrag[0]
                     else:
                         self.sino_hatak = None
@@ -332,7 +346,7 @@ class DigitalBullet(arcade.Window):
 
             # This specifies when a card is should be drawn.
             # The deck must be clicked, no card should be on spawn and the deck should not be empty.
-            elif len(deckClick) > 0 and len(self.spawn) == 0 and len(engine.Game.deck) != 0:
+            elif len(deckClick) > 0 and len(self.spawn) == 0 and len(engine.Game.deck) != 0 and engine.Game.turnCount > 1:
                 print("Deck clicked.")
                 cardTup, engine.Game.deck = engine.drawfromDeck(1, engine.Game.deck) # A card is drawn from the deck.
                 card = arcade.Sprite(engine.getimgStr(cardTup[0]), 0.9) # It is initialized as a sprite,
@@ -351,12 +365,12 @@ class DigitalBullet(arcade.Window):
                         engine.Game.lastTurn = True
 
             # If the discard pile is clicked, allow dragging for the card on top of the discard pile.
-            elif len(discardClick) != 0 and not engine.Game.specialTurn and not engine.Game.Player1.hasDrawn and not engine.Game.Player2.hasDrawn:
+            elif len(discardClick) != 0 and not engine.Game.specialTurn and not engine.Game.Player1.hasDrawn and not engine.Game.Player2.hasDrawn and engine.Game.turnCount > 1:
                 self.sino_hatak = discardClick[len(discardClick)-1]
                 self.last_mouse_position = x, y
 
             # If a bullet was clicked, the last turn was not yet initiated and it is currently not a special turn, the "bullet" mechanic is triggered.
-            elif len(bulletClick) != 0 and engine.Game.lastTurn == False and not engine.Game.specialTurn:
+            elif len(bulletClick) != 0 and engine.Game.lastTurn == False and not engine.Game.specialTurn and engine.Game.turnCount > 1:
                 # The bind of the respective sprites indicates the player who has initiated bullet.
                 if bulletClick[0].bind == 'p1' and engine.Game.Player1.turn:
                     print("Player 1 has initiated bullet.")
@@ -364,6 +378,11 @@ class DigitalBullet(arcade.Window):
                 elif bulletClick[0].bind == 'p2' and engine.Game.Player2.turn:
                     print("Player 2 has initiated bullet.")
                     engine.Game.hasBullet()
+
+            # This allows for viewing two cards for the first turn.
+            if engine.Game.turnCount <= 1:
+                engine.Game.specialTurn = True
+                engine.Game.specialMove = "View your own card."
 
             # If it is currently a special turn, initialize the respective special actions.
             if engine.Game.specialTurn:
@@ -378,6 +397,13 @@ class DigitalBullet(arcade.Window):
                             show.position = own[0].position
                             self.cardsPlayer1.append(show)
                             engine.Game.specialMove = ""
+                            # These allow for viewing two cards from the hand at the start of the game.
+                            if engine.Game.turnCount == 0 and not engine.Game.Player1.hasSeen:
+                                engine.Game.specialMove = "View your own card."
+                                engine.Game.Player1.hasSeen = True
+                            elif engine.Game.turnCount == 0 and engine.Game.Player1.hasSeen:
+                                engine.Game.endTurn()
+
                     elif engine.Game.Player2.turn:
                         own = arcade.get_sprites_at_point((x,y), self.cardsPlayer2)
                         if len(own) != 0:
@@ -385,6 +411,11 @@ class DigitalBullet(arcade.Window):
                             show.position = own[0].position
                             self.cardsPlayer2.append(show)
                             engine.Game.specialMove = ""
+                            if engine.Game.turnCount == 1 and not engine.Game.Player2.hasSeen:
+                                engine.Game.specialMove = "View your own card."
+                                engine.Game.Player2.hasSeen = True
+                            elif engine.Game.turnCount == 1 and engine.Game.Player2.hasSeen:
+                                engine.Game.endTurn()
 
                 elif engine.Game.specialMove == "See the opponent's card.":
                     # If it is the player's turn, check if the player has clicked his/her opponent's cards.
@@ -396,12 +427,14 @@ class DigitalBullet(arcade.Window):
                             show = arcade.Sprite((engine.getimgStr(engine.Game.Player2.sprite2val[own[0]])), 0.9)
                             show.position = own[0].position
                             self.cardsPlayer2.append(show)
+                            engine.Game.specialMove = ""
                     elif engine.Game.Player2.turn:
                         own = arcade.get_sprites_at_point((x,y), self.cardsPlayer1)
                         if len(own) != 0:
                             show = arcade.Sprite((engine.getimgStr(engine.Game.Player1.sprite2val[own[0]])), 0.9)
                             show.position = own[0].position
                             self.cardsPlayer1.append(show)
+                            engine.Game.specialMove = ""
 
                 elif engine.Game.specialMove == "Your opponent's hand is shuffled.":
                     # If it is the player's turn, his/her opponent's cards are shuffled.
@@ -423,10 +456,18 @@ class DigitalBullet(arcade.Window):
            - and turns.
         """
         hatak_last = self.sino_hatak
+        # This function allows the leaderboard to vanish after click.
         if self.requestLeaderboard:
             clicked = arcade.MOUSE_BUTTON_LEFT
             if clicked > 0:
                 self.requestLeaderboard = False
+        # This function alters the instructions displayed upon every click until all instructions have been displayed.
+        elif self.requestInstructions:
+            clicked = arcade.MOUSE_BUTTON_LEFT
+            if clicked > 0 and len(self.instructionsList) != 0:
+                self.toDrawI = self.instructionsList.pop()
+            else:
+                self.requestInstructions = False
         # This checks for loading screen button clicks while the loading screen is open.
         elif self.playScreen:
             textbutton.check_mouse_release_for_buttons(x, y, self.button_list_loadingScreen)
