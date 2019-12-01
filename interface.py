@@ -7,14 +7,15 @@ SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 800
 SCREEN_TITLE = "Digital Bullet"
 
-'''
-DigitalBullet
-- a class for the Arcade Window which contains
-everything to do with the game's graphics
-'''
 class DigitalBullet(arcade.Window):
-
+    '''
+    This is a class for the Arcade Window which contains
+    everything to do with the game's graphics.
+    '''
     def __init__(self, width, height, title):
+        '''
+        This initializes the objects to be used
+        '''
         # makes screen dimensions and title callable throughout the class
         super().__init__(width, height, title)
 
@@ -44,6 +45,10 @@ class DigitalBullet(arcade.Window):
         self.background = None
 
     def setup(self):
+        '''
+        This function is called when the window is first created.
+        It initializes the SpriteList objects that will be used for storing the sprites.
+        '''
         # list for buttons in loading screen
         self.button_list_loadingScreen = []
 
@@ -97,13 +102,13 @@ class DigitalBullet(arcade.Window):
         self.bulletList.append(bullet1)
         self.bulletList.append(bullet2)
 
-    '''
-    This function sets up the game-specific variables such as the players' hands
-    and the top card of the discard pile.
-
-    It allows for the loading of these information through the save state.
-    '''
     def bootStart(self):
+        '''
+        This function sets up the game-specific variables such as the players' hands
+        and the top card of the discard pile.
+
+        It allows for the loading of these information through the save state.
+        '''
         # SpriteList object for the card on top of the discard pile
         first = arcade.Sprite(engine.getimgStr(engine.Game.discardCoord), 0.9)
         first.center_x = (SCREEN_WIDTH//2+(264))
@@ -114,12 +119,11 @@ class DigitalBullet(arcade.Window):
         self.cardsPlayer1, self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val = engine.Game.refreshPlayers(self.cardsPlayer1,
         self.cardsPlayer2, engine.Game.Player1.sprite2val, engine.Game.Player2.sprite2val, engine.Game.Player1.hand, engine.Game.Player2.hand, SCREEN_HEIGHT)
 
-    '''
-    This function is called when the play button is pressed.
-    It renders a new screen and starts a new game.
-    '''
     def play_program(self):
-
+        '''
+        This function is called when the play button is pressed.
+        It renders a new screen and starts a new game.
+        '''
         self.button_list_loadingScreen = [] # empties the list for laoding screen buttons to remove button display
         self.playScreen = False # boolean for displaying the loading screen is set to false
 
@@ -127,11 +131,11 @@ class DigitalBullet(arcade.Window):
         engine.Game = engine.Game([]) # the "[]" indicates that there is no variable to load
         self.bootStart() # initializes the game display
 
-    '''
-    This function is called when the continue button is pressed.
-    It renders a new screen and loads the previous game state.
-    '''
     def continue_program(self):
+        '''
+        This function is called when the continue button is pressed.
+        It renders a new screen and loads the previous game state.
+        '''
         self.button_list_loadingScreen = []
         self.playScreen = False
 
@@ -139,26 +143,25 @@ class DigitalBullet(arcade.Window):
         engine.Game = engine.Game(engine.loadProgress()) # calls the function to check for and gather variables from the previous game state
         self.bootStart()
 
-    '''
-    This function is called when the instructions button is pressed.
-    It displays the instructions.
-    '''
     def display_instructions(self):
+        '''
+        This function is called when the instructions button is pressed.
+        It displays the instructions.
+        '''
         print("Insert Instructions Here")
 
-    '''
-    This function is called when the leaderboard button is pressed.
-    It displays the leaderboard.
-    '''
     def display_leaderboard(self):
+        '''
+        This function is called when the leaderboard button is pressed.
+        It displays the leaderboard.
+        '''
         print("Leaderboard Displayed")
 
-    '''
-    This function is called every time the update function is called.
-    It draws the specified objects on the screen.
-    '''
     def on_draw(self):
-
+        '''
+        This function is called every time the update function is called.
+        It draws the specified objects on the screen.
+        '''
         # This command clears the screen to the background color and erases the objects from the last frame.
         arcade.start_render()
 
@@ -219,11 +222,11 @@ class DigitalBullet(arcade.Window):
             for button in self.button_list_instructions:
                 button.draw()
 
-    '''
-    This function is called for every frame, i.e. ~once every second.
-    It allows for object movement and calls on_draw for every run.
-    '''
     def on_update(self, delta_time):
+        '''
+        This function is called for every frame, i.e. ~once every second.
+        It allows for object movement and calls on_draw for every run.
+        '''
         # If an object is being dragged, update its position based on where the mouse was.
         if self.sino_hatak is not None:
             self.sino_hatak.position = self.last_mouse_position
@@ -236,10 +239,11 @@ class DigitalBullet(arcade.Window):
             self.cardsPlayer1.update()
             self.cardsPlayer2.update()
 
-    '''
-    This function is called whenever the mouse moves.
-    '''
     def on_mouse_motion(self, x, y, delta_x, delta_y):
+        '''
+        This function is called whenever the mouse moves.
+        It allows for object movement and button hover.
+        '''
 
         # These allow for button highlighting when the mouse hovers it.
         if self.playScreen:
@@ -262,19 +266,22 @@ class DigitalBullet(arcade.Window):
 
         # If the game has started, this checks whether the left mouse button is pressed.
         elif button == arcade.MOUSE_BUTTON_LEFT:
-
             # These creates a list toDrag which specifies objects to drag.
             # Only objects from the specified SpriteList objects may be dragged.
             toDrag = arcade.get_sprites_at_point((x,y), self.cardsPlayer1) # The get_sprites_at_point function returns a list of objects at the x, y coordinate.
             toDrag += arcade.get_sprites_at_point((x,y), self.cardsPlayer2) # The lists are added since these objects are not stacked and located far from each other.
             toDrag += arcade.get_sprites_at_point((x,y), self.spawn) # Thus, only one object is clicked at once.
 
-            # 
-            deckClick = arcade.get_sprites_at_point((x,y), self.deckShow)
-            discardClick = arcade.get_sprites_at_point((x,y), self.discardPile)
-            bulletClick = arcade.get_sprites_at_point((x,y), self.bulletList)
+            # These create lists for respective game-specific elements distinct of the cards.
+            deckClick = arcade.get_sprites_at_point((x,y), self.deckShow) # This creates a list for the deck image when clicked. It contains the deck image when clicked; else, it is empty.
+            discardClick = arcade.get_sprites_at_point((x,y), self.discardPile) # This creates a list of clicked cards from the discard pile. Either it contains all cards or it is empty.
+            bulletClick = arcade.get_sprites_at_point((x,y), self.bulletList) # This creates a list of clicked bullets. At most, one bullet sprite is found here; else, it is empty.
 
+            # This specifies the objects to drag. If the list of objects to be dragged is not empty, the first element is recorded.
+            # Since the lists are mutually exclusive, and only one action can be done at a time,
             if (len(toDrag) > 0):
+                # If the player has drawn a special turn that does not involve card swapping, card dragging is not allowed unless it is the spawn card.
+                # Else, cards may be dragged.
                 if engine.Game.specialTurn and engine.Game.specialMove != "Swap a card with the opponent.":
                     if toDrag[0] == self.spawn[0]:
                         self.sino_hatak = toDrag[0]
@@ -282,25 +289,37 @@ class DigitalBullet(arcade.Window):
                         self.sino_hatak = None
                 else:
                     self.sino_hatak = toDrag[0]
-
+                # The mouse position is saved for updating the position of the object to be dragged at on_update.
                 self.last_mouse_position = x, y
+
+            # This specifies when a card is should be drawn.
+            # The deck must be clicked, no card should be on spawn and the deck should not be empty.
             elif len(deckClick) > 0 and len(self.spawn) == 0 and len(engine.Game.deck) != 0:
                 print("Deck clicked.")
-                cardTup, engine.Game.deck = engine.drawfromDeck(1, engine.Game.deck)
-                card = arcade.Sprite(engine.getimgStr(cardTup[0]), 0.9)
-                card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
-                self.spawn.append(card)
-                engine.Game.spawnCoord = cardTup[0]
-                engine.Game.hasDrawn(True)
-                arcade.play_sound(self.draw_sound)
+                cardTup, engine.Game.deck = engine.drawfromDeck(1, engine.Game.deck) # A card is drawn from the deck.
+                card = arcade.Sprite(engine.getimgStr(cardTup[0]), 0.9) # It is initialized as a sprite,
+                card.position = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2) # set at the location of the spawn,
+                self.spawn.append(card) # appended to the spawn pile,
+                engine.Game.spawnCoord = cardTup[0] # and stored as the last spawn coordinate.
+                engine.Game.hasDrawn(True) # This variable restricts drawing more than one card and other actions while the card is drawn.
+                arcade.play_sound(self.draw_sound) # This plays the draw sound.
+
+                # This checks if the drawn card has a special ability.
                 if engine.isSpecial(engine.Game.spawnCoord):
-                    engine.Game.getAction(engine.Game.spawnCoord)
+                    engine.Game.getAction(engine.Game.spawnCoord) # This function gets the specific action of the card.
+
+                # If the deck is empty after the card was drawn, the current turn becomes the last.
                 if len(engine.Game.deck) == 0:
                         engine.Game.lastTurn = True
-            elif len(discardClick) != 0:
+
+            # If the discard pile is clicked, allow dragging for the card on top of the discard pile.
+            elif len(discardClick) != 0 and not engine.Game.specialTurn and not engine.Game.Player1.hasDrawn and not engine.Game.Player2.hasDrawn:
                 self.sino_hatak = discardClick[len(discardClick)-1]
                 self.last_mouse_position = x, y
+
+            # If a bullet was clicked, the last turn was not yet initiated and it is currently not a special turn, the "bullet" mechanic is triggered.
             elif len(bulletClick) != 0 and engine.Game.lastTurn == False and not engine.Game.specialTurn:
+                # The bind of the respective sprites indicates the player who has initiated bullet.
                 if bulletClick[0].bind == 'p1' and engine.Game.Player1.turn:
                     print("Player 1 has initiated bullet.")
                     engine.Game.hasBullet()
@@ -308,23 +327,33 @@ class DigitalBullet(arcade.Window):
                     print("Player 2 has initiated bullet.")
                     engine.Game.hasBullet()
 
+            # If it is currently a special turn, initialize the respective special actions.
             if engine.Game.specialTurn:
                 if engine.Game.specialMove == "View your own card.":
+                    # If it is the player's turn, check if the player has clicked of his/her own cards.
                     if engine.Game.Player1.turn:
                         own = arcade.get_sprites_at_point((x,y), self.cardsPlayer1)
+                        # If the player has clicked a card on his/her hand, create a sprite which shows its value.
+                        # The special move is reset to "".
                         if len(own) != 0:
                             show = arcade.Sprite((engine.getimgStr(engine.Game.Player1.sprite2val[own[0]])), 0.9)
                             show.position = own[0].position
                             self.cardsPlayer1.append(show)
+                            engine.Game.specialMove = ""
                     elif engine.Game.Player2.turn:
                         own = arcade.get_sprites_at_point((x,y), self.cardsPlayer2)
                         if len(own) != 0:
                             show = arcade.Sprite((engine.getimgStr(engine.Game.Player2.sprite2val[own[0]])), 0.9)
                             show.position = own[0].position
                             self.cardsPlayer2.append(show)
+                            engine.Game.specialMove = ""
+
                 elif engine.Game.specialMove == "See the opponent's card.":
+                    # If it is the player's turn, check if the player has clicked his/her opponent's cards.
                     if engine.Game.Player1.turn:
                         own = arcade.get_sprites_at_point((x,y), self.cardsPlayer2)
+                        # If the player has clicked a card on his/her opponent's hand, create a sprite which shows its value.
+                        # The special move is reset to "".
                         if len(own) != 0:
                             show = arcade.Sprite((engine.getimgStr(engine.Game.Player2.sprite2val[own[0]])), 0.9)
                             show.position = own[0].position
@@ -335,27 +364,43 @@ class DigitalBullet(arcade.Window):
                             show = arcade.Sprite((engine.getimgStr(engine.Game.Player1.sprite2val[own[0]])), 0.9)
                             show.position = own[0].position
                             self.cardsPlayer1.append(show)
+
                 elif engine.Game.specialMove == "Your opponent's hand is shuffled.":
+                    # If it is the player's turn, his/her opponent's cards are shuffled.
                     if engine.Game.Player1.turn:
                         engine.Game.Player2.shuffle()
                     elif engine.Game.Player2.turn:
                         engine.Game.Player1.shuffle()
                 else:
+                    # This condition is satisfied only when the special move is card swap among players.
+                    # In which case, the special move is handled by mouse release.
                     pass
 
     def on_mouse_release(self, x, y, button, key_modifiers):
         """
-        Called when a user releases a mouse button.
+        This function is called when a user releases a mouse button.
+        It comprises of majority of the game's mechanics such as:
+           - card matching,
+           - special card abilities,
+           - and turns.
         """
+
+        # This checks for loading screen button clicks while the loading screen is open.
         if self.playScreen:
             textbutton.check_mouse_release_for_buttons(x, y, self.button_list_loadingScreen)
             textbutton.check_mouse_release_for_buttons(x, y, self.button_list_instructions)
-        #releases the card being dragged at mouse release
+
+        # This releases the card being dragged at mouse release.
         hatak_last = self.sino_hatak
         if button == arcade.MOUSE_BUTTON_LEFT:
             self.sino_hatak = None
 
-        #checks if "sapaw" is initiated, i.e. if card is placed on discardPile
+        '''
+        This checks if "sapaw" is initiated, i.e. if card is placed on discardPile.
+        The playArea serves as the object to detect collision.
+        The sapaw function alters the hand appropriately. If the wrong card is pressed, a card is added onto the hand.
+        Else, the card is released from the hand.
+        '''
         p1Sapaw = arcade.check_for_collision_with_list(self.playArea, self.cardsPlayer1)
         if p1Sapaw != [] and engine.Game.Player1.hasDrawn == False:
             self.discardPile, engine.Game.Player1.hand, self.cardsPlayer1, isWrong = engine.Game.sapaw(p1Sapaw[0],

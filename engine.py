@@ -95,8 +95,12 @@ class Game:
         if self.Player1.turn == True and bool:
             print("Player 1 has drawn from the deck.")
             self.Player1.hasDrawn = bool
+        elif self.Player1.turn == True and not bool:
+            self.Player1.hasDrawn = bool
         elif self.Player2.turn == True and bool:
             print("Player 2 has drawn from the deck.")
+            self.Player2.hasDrawn = bool
+        elif self.Player2.turn == True and not bool:
             self.Player2.hasDrawn = bool
         else:
             pass
@@ -131,6 +135,8 @@ class Game:
         sav.close()
 
         file2 = 'leaderboard.txt'
+        if not os.path.exists(file2):
+            leader = open(file2, 'w')
         leader = open(file2, 'r')
         l = leader.readlines()
 

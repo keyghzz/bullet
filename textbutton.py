@@ -5,7 +5,6 @@ SCREEN_HEIGHT = 800
 SCREEN_TITLE = "Digital Bullet"
 
 class TextButton:
-    """ Text-based button """
 
     def __init__(self,
                  center_x, center_y,
@@ -32,7 +31,7 @@ class TextButton:
         self.button_height = button_height
 
     def draw(self):
-        """ Draw the button """
+        """ How the button will be drawn """
         if not self.pressed:
             arcade.draw_rectangle_filled(self.center_x, self.center_y, self.width,
                                         self.height, self.face_color)
@@ -40,6 +39,7 @@ class TextButton:
             arcade.draw_rectangle_filled(self.center_x, self.center_y, self.width,
                                         self.height, arcade.color.BLACK_LEATHER_JACKET)
 
+        """ Changing the button color when it's pressed """
         if not self.pressed:
             color = self.shadow_color
         else:
@@ -76,6 +76,7 @@ class TextButton:
             x -= self.button_height
             y += self.button_height
 
+        """ Changing text color from white to yellow when mouse is hovering over the button """
         if not self.hover:
             arcade.draw_text(self.text, x, y,
                             arcade.color.WHITE, font_size=self.font_size, font_name="resources/FSEX302.ttf",
@@ -87,15 +88,15 @@ class TextButton:
                             width=self.width, align="center",
                             anchor_x="center", anchor_y="center")
 
+    # Functions for when the buttons are pressed
     def on_press(self):
         self.pressed = True
-
     def on_release(self):
         self.pressed = False
 
+    # Functions for when the buttons are hovered over with the mouse
     def hovering(self):
         self.hover = True
-
     def not_hovering(self):
         self.hover = False
 
@@ -121,7 +122,7 @@ def check_mouse_release_for_buttons(_x, _y, button_list):
             button.on_release()
 
 def check_mouse_hovering_for_buttons(x, y, button_list):
-    """ Given an x, y, see if we need to register any button clicks. """
+    """ Given an x, y, see if we need to see where the mouse is in relation to the button """
     for button in button_list:
         if x > button.center_x + button.width / 2:
             button.not_hovering()
@@ -136,6 +137,15 @@ def check_mouse_hovering_for_buttons(x, y, button_list):
             button.not_hovering()
             continue
         button.hovering()
+
+
+"""
+Defining and calling the buttons to be displayed.
+This is in the form:
+super().__init__(x-anchor, y-anchor, button width, button height, text on the button, font size, font face)
+
+"""
+
 
 class StartTextButton(TextButton):
     def __init__(self, center_x, center_y, action_function):
