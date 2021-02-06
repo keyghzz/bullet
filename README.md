@@ -1,6 +1,9 @@
-![Digital Bullet logo] (logo.png)
-# bullet
-An two player turn-based card game implemented on Python 3 for CS 11 (Intro to Computer Programming).
+<img src="logo.png" align="left" width="150" height="150">
+
+# Digital Bullet
+*A two-player turn-based card game implemented on Python 3 for CS 11 (Intro to Computer Programming).*
+
+&nbsp;
 
 # Installation
 To install dependencies, run the following command:
