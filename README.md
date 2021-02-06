@@ -1,8 +1,30 @@
+![Digital Bullet logo] (logo.png)
 # bullet
+An two player turn-based card game implemented on Python 3 for CS 11 (Intro to Computer Programming).
 
-## TODO FOR MP02:
-- [ ] programmer's documentation
-- [ ] annotate the source code (interface done; engine wala pa huhu)
-- [X] optimize/organize special code = pass na ako dito
-- [X] answer peer eval
-- [ ] GAME MECHANIC: view 2 cards at the start of the game
+# Installation
+To install dependencies, run the following command:
+```
+python3 -m pip install -r requirements
+```
+
+# Usage
+To start the game, run the main.py function:
+```
+python3 main.py
+```
+
+# Documentation
+
+The **engine.py** file contains 'backend' structures: card behavior, turn mechanics and player scoring.
+
+The **interface.py** file contains 'frontend' structures: sprite location, text display and display mechanisms.
+
+The **textbutton.py** file contains the menu components.
+
+The **resources** folder contains all images used as sprites. The card images used were taken from [Kenney's Playing Cards Pack](https://kenney.nl/assets/playing-cards-pack) licensed under CC0 1.0 Universal (Public Domain).
+
+An extensive HTML documentation generated using doxygen from Python function docs can be found in the documentation folder.
+
+# Credits
+This project was completed with 3 other batchmates. Hello sa inyo, Group 21!
