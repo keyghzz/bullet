@@ -47,6 +47,7 @@ class Player:
         self.hasSeen = False
     def shuffle(self):
         random.shuffle(self.hand)
+        return self.hand
 
 class Game:
 
@@ -100,7 +101,7 @@ class Game:
     def sapaw(self, card, discardPile, hand, sprite2val, cardsPlayer, SCREEN_WIDTH, SCREEN_HEIGHT):
 
         '''
-        Players discard a card that has the same vaue as the card on the discard pile
+        Players discard a card that has the same value as the card on the discard pile
         '''
 
         if (sprite2val[card])[1] == self.discardCoord[1]:

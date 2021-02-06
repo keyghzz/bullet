@@ -439,9 +439,9 @@ class DigitalBullet(arcade.Window):
                 elif engine.Game.specialMove == "Your opponent's hand is shuffled.":
                     # If it is the player's turn, his/her opponent's cards are shuffled.
                     if engine.Game.Player1.turn:
-                        engine.Game.Player2.shuffle()
+                        engine.Game.Player2.hand = engine.Game.Player2.shuffle()
                     elif engine.Game.Player2.turn:
-                        engine.Game.Player1.shuffle()
+                        engine.Game.Player1.hand = engine.Game.Player1.shuffle()
                 else:
                     # This condition is satisfied only when the special move is card swap among players.
                     # In which case, the special move is handled by mouse release.
