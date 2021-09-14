@@ -28,6 +28,3 @@ The **textbutton.py** file contains the menu components.
 The **resources** folder contains all images used as sprites. The card images used were taken from [Kenney's Playing Cards Pack](https://kenney.nl/assets/playing-cards-pack) licensed under CC0 1.0 Universal (Public Domain).
 
 An extensive HTML documentation generated using doxygen from Python function docs can be found in the documentation folder.
-
-# Credits
-This project was completed with 3 other batchmates. Hello sa inyo, Group 21!
